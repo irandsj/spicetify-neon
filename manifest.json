@@ -1,0 +1,26 @@
+[
+  {
+    "name": "NeonDrift Ambient",
+    "description": "When Spotify sits idle, it turns into a neon visualizer synced to the music: 3 styles, per-element layers, beat zoom and glow, album-cover wallpaper. Works with any theme. English + Português (BR).",
+    "preview": "previews/ambient.jpg",
+    "main": "extension/neondrift-ambient.js",
+    "readme": "README.md",
+    "authors": [
+      { "name": "Iran", "url": "https://github.com/irandsj" }
+    ],
+    "tags": ["visualizer", "ambient", "idle", "wallpaper"]
+  },
+  {
+    "name": "NeonDrift",
+    "description": "Neon glass theme with a two-colour accent system. Pairs with the NeonDrift Ambient extension (colours and wallpaper from its panel).",
+    "preview": "previews/theme.jpg",
+    "readme": "README.md",
+    "usercss": "theme/NeonDrift/user.css",
+    "schemes": "theme/NeonDrift/color.ini",
+    "include": ["https://raw.githubusercontent.com/irandsj/spicetify-neon/main/extension/neondrift-ambient.js"],
+    "authors": [
+      { "name": "Iran", "url": "https://github.com/irandsj" }
+    ],
+    "tags": ["neon", "glass", "dark"]
+  }
+]

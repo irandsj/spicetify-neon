@@ -1,0 +1,1583 @@
+/* --------------------------------------------------------------------------
+   NeonDrift Ambient - "Personalizar NeonDrift": the top-bar button
+       (.spicetify-topbar-button.nd-amb-topbtn, Spicetify.Topbar) and the
+       popover #nd-amb-panel it opens, with three tabs: "Ambiente" (ambient
+       mode), "Cores" (19b) and "Wallpaper" (19c). Everything is scoped to
+       those two; every colour comes from the --nda-* variables (vars.css,
+       written by the extension from the chosen pair).
+   -------------------------------------------------------------------------- */
+.nd-amb-topbtn.nd-amb-topbtn--open > button {
+  color: var(--nda-a2-fg-hi) !important;
+}
+.nd-amb-topbtn.nd-amb-topbtn--open > button svg {
+  filter: drop-shadow(0 0 5px rgba(var(--nda-a2-rgb), 0.7));
+}
+/* (the button opens colours and wallpaper too, so it is no longer
+   dimmed when the ambient mode is off; .nd-amb-topbtn--off still marks it) */
+
+#nd-amb-panel {
+  position: fixed;
+  z-index: 2147482000;              /* above Spotify's UI, below the overlay */
+  top: 64px;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  max-width: calc(100vw - 16px);
+  box-sizing: border-box;
+  color: var(--nda-text);
+  font-family: var(--nda-font);
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: left;
+  background: linear-gradient(180deg, rgba(17, 38, 76, 0.97) 0%, rgba(9, 24, 52, 0.97) 100%);
+  border: 1px solid var(--nda-border);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 1px rgba(var(--nda-a1-rgb), 0.07),
+    0 0 26px rgba(var(--nda-a2-rgb), 0.14),
+    0 26px 64px rgba(0, 0, 0, 0.62);
+  /* no backdrop-filter: the background is 97% opaque, so a blur would be
+     invisible yet recomposited every frame of the live preview */
+  opacity: 0;
+  transform: translateY(-6px) scale(0.985);
+  transform-origin: calc(100% - 24px) 0;
+  transition: opacity 140ms ease, transform 180ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  outline: none;
+}
+#nd-amb-panel.nd-ap--open {
+  opacity: 1;
+  transform: none;
+}
+#nd-amb-panel *,
+#nd-amb-panel *::before,
+#nd-amb-panel *::after {
+  box-sizing: border-box;
+}
+/* caret pointing at the button */
+#nd-amb-panel::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: calc(var(--nda-ap-arrow, 370px) - 6px);
+  width: 11px;
+  height: 11px;
+  background: rgb(17, 38, 76);
+  border-left: 1px solid var(--nda-border);
+  border-top: 1px solid var(--nda-border);
+  border-top-left-radius: 3px;
+  transform: rotate(45deg);
+}
+#nd-amb-panel.nd-ap--center::before,
+#nd-amb-panel.nd-ap--above::before {   /* no button above it: centred / opened upwards */
+  display: none;
+}
+
+#nd-amb-panel .nd-ap__head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 12px 11px 16px;
+  border-bottom: 1px solid var(--nda-border-soft);
+}
+#nd-amb-panel .nd-ap__logo {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: var(--nda-on-accent);
+  background: var(--nda-grad);
+  box-shadow: 0 0 12px rgba(var(--nda-a1-rgb), 0.35);
+}
+#nd-amb-panel .nd-ap__title {
+  flex: 1;
+  margin: 0;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.005em;
+}
+#nd-amb-panel .nd-ap__close {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--nda-subtext);
+  background: transparent;
+  cursor: pointer;
+}
+#nd-amb-panel .nd-ap__close:hover {
+  color: #ffffff;
+  background: rgba(var(--nda-a2-rgb), 0.12);
+}
+
+#nd-amb-panel .nd-ap__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 12px 16px 14px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--nda-line-rgb), 0.35) transparent;
+}
+
+#nd-amb-panel .nd-ap__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+#nd-amb-panel .nd-ap__rowtext {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+#nd-amb-panel .nd-ap__label {
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+#nd-amb-panel .nd-ap__hint {
+  color: var(--nda-muted);
+  font-size: 11.5px;
+}
+#nd-amb-panel .nd-ap__master {
+  padding: 10px 12px;
+  border: 1px solid var(--nda-border-soft);
+  border-radius: 10px;
+  background: rgba(var(--nda-a2-rgb), 0.06);
+}
+
+/* switches (same colours as the theme's Spotify toggles, section 9c) */
+#nd-amb-panel .nd-ap__switch {
+  position: relative;
+  flex: none;
+  width: 38px;
+  height: 22px;
+  margin: 0;
+  padding: 0;                       /* pinned: other themes style every input */
+  border: 0;
+  border-radius: 999px;
+  background: #3b5180;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+#nd-amb-panel .nd-ap__switch::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--nda-text);
+  transition: transform 160ms cubic-bezier(0.22, 0.61, 0.36, 1), background-color 160ms ease;
+}
+#nd-amb-panel .nd-ap__row:hover .nd-ap__switch:not(:checked) {
+  background: #56709f;
+}
+#nd-amb-panel .nd-ap__switch:checked {
+  background: var(--nda-grad);
+  box-shadow: 0 0 10px rgba(var(--nda-a2-rgb), 0.40);
+}
+#nd-amb-panel .nd-ap__switch:checked::before {
+  transform: translateX(16px);
+  background: var(--nda-on-accent);
+}
+
+/* live preview */
+#nd-amb-panel .nd-ap__preview {
+  position: relative;
+  flex: none;
+  height: 128px;
+  overflow: hidden;
+  border: 1px solid var(--nda-border-soft);
+  border-radius: 10px;
+  background: #020713;
+}
+#nd-amb-panel .nd-ap__preview canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+#nd-amb-panel .nd-ap__badge {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  padding: 2px 8px 2px 18px;
+  border: 1px solid rgba(var(--nda-a2-rgb), 0.30);
+  border-radius: 999px;
+  color: var(--nda-a2-fg-hi);
+  background: rgba(2, 7, 19, 0.62);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+#nd-amb-panel .nd-ap__badge::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 7px;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--nda-a1);
+  box-shadow: 0 0 6px var(--nda-a1);
+}
+
+#nd-amb-panel .nd-ap__h {
+  margin: 0 0 7px;
+  color: var(--nda-subtext);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+#nd-amb-panel .nd-ap__section--inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+#nd-amb-panel .nd-ap__section--inline .nd-ap__h {
+  margin: 0;
+}
+
+/* visualizer cards */
+#nd-amb-panel .nd-ap__styles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 6px;                 /* room for the "Ativo" pill on the border */
+}
+#nd-amb-panel .nd-ap__card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 7px 8px 6px;
+  border: 1px solid var(--nda-border-soft);
+  border-radius: 10px;
+  background: rgba(var(--nda-text-rgb), 0.035);
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+}
+#nd-amb-panel .nd-ap__card:hover {
+  border-color: var(--nda-border);
+  background: rgba(var(--nda-a2-rgb), 0.07);
+}
+/* the selected style: 2 px gradient frame, lit thumbnail and an "Ativo" pill
+   (the others are dimmed); the keyboard focus ring is a separate, thinner
+   dashed outline so it never looks like the selection */
+#nd-amb-panel .nd-ap__card--on,
+#nd-amb-panel .nd-ap__card--on:hover {
+  padding: 6px 7px 5px;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(rgb(15, 35, 70), rgb(15, 35, 70)) padding-box,
+    var(--nda-grad) border-box;
+  box-shadow: 0 0 16px rgba(var(--nda-a1-rgb), 0.28), 0 0 22px rgba(var(--nda-a2-rgb), 0.16);
+}
+#nd-amb-panel .nd-ap__card:has(.nd-ap__radio:focus-visible) {
+  outline: 1.5px dashed var(--nda-a2-fg-hi);
+  outline-offset: 3px;
+}
+#nd-amb-panel .nd-ap__card:not(.nd-ap__card--on) .nd-ap__thumb svg {
+  opacity: 0.5;
+  filter: saturate(0.7);
+  transition: opacity 140ms ease;
+}
+#nd-amb-panel .nd-ap__card:not(.nd-ap__card--on):hover .nd-ap__thumb svg {
+  opacity: 0.85;
+}
+#nd-amb-panel .nd-ap__card {
+  position: relative;
+}
+/* the "Ativo" pill sits on the card's top border (like a tab badge), never
+   over the style's drawing */
+#nd-amb-panel .nd-ap__active {
+  position: absolute;
+  top: -15px;
+  right: 2px;
+  z-index: 1;
+  display: none;
+  padding: 1px 6px;
+  border-radius: 999px;
+  color: var(--nda-on-accent);
+  background: var(--nda-grad);
+  box-shadow: 0 0 8px rgba(var(--nda-a1-rgb), 0.35);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+#nd-amb-panel .nd-ap__card--on .nd-ap__active {
+  display: block;
+}
+#nd-amb-panel .nd-ap__pick {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+#nd-amb-panel .nd-ap__radio,
+#nd-amb-panel .nd-ap__segopt input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+#nd-amb-panel .nd-ap__thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 38px;
+  border-radius: 7px;
+  background: rgba(2, 7, 19, 0.5);
+}
+#nd-amb-panel .nd-ap__thumb svg {
+  width: 56px;
+  height: 32px;
+  overflow: visible;
+}
+#nd-amb-panel .nd-ap__card--on .nd-ap__thumb svg {
+  filter: drop-shadow(0 0 4px rgba(var(--nda-a2-rgb), 0.55));
+}
+#nd-amb-panel .nd-ap__name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.4em;
+  color: var(--nda-text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+#nd-amb-panel .nd-ap__card--on .nd-ap__name {
+  color: #ffffff;
+}
+
+/* the selected style's "Intensidade" / "Alcance" / "Volta", in a box
+   that hangs from its card (the notch follows --nda-sb-x, set by the extension) */
+#nd-amb-panel .nd-ap__stylebox {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 9px;
+  padding: 9px 11px 8px;
+  border: 1px solid rgba(var(--nda-a2-rgb), 0.42);
+  border-radius: 10px;
+  background: rgb(15, 35, 70);
+  box-shadow: 0 0 14px rgba(var(--nda-a1-rgb), 0.14);
+}
+#nd-amb-panel .nd-ap__stylebox::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: var(--nda-sb-x, 50%);
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid rgba(var(--nda-a2-rgb), 0.42);
+  border-left: 1px solid rgba(var(--nda-a2-rgb), 0.42);
+  background: rgb(15, 35, 70);
+  transform: translateX(-50%) rotate(45deg);
+  transition: left 180ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+#nd-amb-panel .nd-ap__sbhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+#nd-amb-panel .nd-ap__sbname {
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+#nd-amb-panel .nd-ap__sbtag {
+  color: var(--nda-muted);
+  font-size: 10.5px;
+}
+#nd-amb-panel .nd-ap__srow {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 0 10px;
+}
+#nd-amb-panel .nd-ap__srow .nd-ap__rlabel {
+  color: var(--nda-text);
+  font-size: 11.5px;
+}
+#nd-amb-panel .nd-ap__srow .nd-ap__val {
+  font-size: 11.5px;
+}
+#nd-amb-panel .nd-ap__ends {
+  grid-column: 2;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1px;               /* clear of the 16 px thumb at either end */
+  padding: 0 2px;
+  color: var(--nda-muted);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+#nd-amb-panel .nd-ap__stylebox > .nd-ap__hint {
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+/* "Padrão" (only this style), "Tracinhos" (peak caps) */
+#nd-amb-panel .nd-ap__sbright {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+#nd-amb-panel .nd-ap__sbreset {
+  height: 20px;
+  padding: 0 8px;
+  border: 1px solid rgba(var(--nda-a2-rgb), 0.40);
+  border-radius: 999px;
+  color: var(--nda-a2-fg-hi);
+  background: rgba(2, 7, 19, 0.35);
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 18px;
+  cursor: pointer;
+}
+#nd-amb-panel .nd-ap__sbreset:hover:not(:disabled) {
+  border-color: rgba(var(--nda-a2-rgb), 0.75);
+  color: #ffffff;
+}
+#nd-amb-panel .nd-ap__sbreset:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+#nd-amb-panel .nd-ap__sbreset:focus-visible {
+  outline: 2px solid var(--nda-a2);
+  outline-offset: 2px;
+}
+#nd-amb-panel .nd-ap__srow--caps {
+  cursor: pointer;
+}
+#nd-amb-panel .nd-ap__srow--caps[hidden] {
+  display: none;
+}
+#nd-amb-panel .nd-ap__capshint {
+  min-width: 0;
+  color: var(--nda-muted);
+  font-size: 10.5px;
+  line-height: 1.25;
+}
+#nd-amb-panel .nd-ap__srow--caps .nd-ap__switch {
+  justify-self: end;
+  transform: scale(0.86);
+  transform-origin: right center;
+}
+/* "Wallpaper" tab: the ambient background at its real size + "Ver no modo ambiente" */
+#nd-amb-panel .nd-ap__ambpv {
+  position: relative;
+  height: 112px;
+  margin-top: 2px;
+  overflow: hidden;
+  border: 1px solid var(--nda-border-soft);
+  border-radius: 10px;
+  background: #020713;
+}
+#nd-amb-panel .nd-ap__ambpv canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+#nd-amb-panel .nd-ap__ambpv .nd-ap__badge {
+  padding-left: 8px;
+}
+#nd-amb-panel .nd-ap__ambpv .nd-ap__badge::before {
+  display: none;
+}
+#nd-amb-panel .nd-ap__ambtest {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  height: 26px;
+  padding: 0 10px;
+  font-size: 11.5px;
+  background: rgba(2, 7, 19, 0.72);
+}
+
+/* intensity sliders */
+#nd-amb-panel .nd-ap__range {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0 6px;
+}
+#nd-amb-panel .nd-ap__range .nd-ap__slider {
+  grid-column: 1 / -1;
+}
+#nd-amb-panel .nd-ap__range--row {
+  grid-template-columns: auto 1fr 40px;
+  gap: 0 10px;
+}
+#nd-amb-panel .nd-ap__range--wall {
+  grid-template-columns: 148px minmax(0, 1fr) 46px;   /* "Desfoque no modo ambiente" + "Nítido" */
+}
+#nd-amb-panel .nd-ap__range--row .nd-ap__slider {
+  grid-column: auto;
+}
+#nd-amb-panel .nd-ap__rlabel {
+  color: var(--nda-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+#nd-amb-panel .nd-ap__val {
+  color: var(--nda-a2-fg-hi);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+#nd-amb-panel .nd-ap__slider {
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  padding: 0;                       /* pinned: other themes style every input */
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+#nd-amb-panel .nd-ap__slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, var(--nda-a1) 0%, var(--nda-a2) 100%) 0 0 / var(--nda-fill, 50%) 100% no-repeat,
+    rgba(var(--nda-muted-rgb), 0.26);
+}
+#nd-amb-panel .nd-ap__slider::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(var(--nda-a2-rgb), 0.55), 0 0 10px rgba(var(--nda-a2-rgb), 0.55);
+  -webkit-appearance: none;
+  appearance: none;
+}
+#nd-amb-panel .nd-ap__slider:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--nda-a1-hi) 75%, transparent), 0 0 12px rgba(var(--nda-a1-rgb), 0.55);
+}
+#nd-amb-panel .nd-ap__slider:focus-visible {
+  outline: none;
+}
+#nd-amb-panel .nd-ap__slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--nda-a2-fg), 0 0 14px rgba(var(--nda-a2-rgb), 0.8);
+}
+#nd-amb-panel .nd-ap__slider:disabled {
+  cursor: default;
+}
+
+/* effects */
+#nd-amb-panel .nd-ap__fx {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 9px 11px 7px;
+  border: 1px solid var(--nda-border-soft);
+  border-radius: 10px;
+  background: rgba(var(--nda-text-rgb), 0.035);
+}
+#nd-amb-panel .nd-ap__fx + .nd-ap__fx {
+  margin-top: 8px;
+}
+#nd-amb-panel .nd-ap__fx--off .nd-ap__range {
+  opacity: 0.42;
+}
+
+/* v5b "Camadas por elemento": master row, then "Camadas" / "Reações", each row
+   a toggle + the same 0-500 % slider as "Intensidade" (dims when its toggle is
+   off); the whole body dims when the master is off */
+#nd-amb-panel .nd-ap__elbox {
+  gap: 7px;
+}
+#nd-amb-panel .nd-ap__elbody {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: opacity 160ms ease;
+}
+#nd-amb-panel .nd-ap__elbox--off .nd-ap__elbody {
+  opacity: 0.45;
+}
+#nd-amb-panel .nd-ap__elsub {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--nda-border-soft);
+}
+#nd-amb-panel .nd-ap__elsubname {
+  color: var(--nda-subtext);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+#nd-amb-panel .nd-ap__elsubtag {
+  flex: 1;
+  min-width: 0;
+  color: var(--nda-muted);
+  font-size: 11.5px;
+}
+#nd-amb-panel .nd-ap__elrow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px 0 2px;
+}
+#nd-amb-panel .nd-ap__ellabel {
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+#nd-amb-panel .nd-ap__elhead .nd-ap__hint,
+#nd-amb-panel .nd-ap__elhue .nd-ap__hint {
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+#nd-amb-panel .nd-ap__switch--sm {
+  transform: scale(0.86);
+  transform-origin: right center;
+}
+#nd-amb-panel .nd-ap__range--el {
+  grid-template-columns: 62px minmax(0, 1fr) 44px;
+}
+#nd-amb-panel .nd-ap__elrow--off .nd-ap__range {
+  opacity: 0.42;
+}
+#nd-amb-panel .nd-ap__elhue {
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px solid var(--nda-border-soft);
+}
+#nd-amb-panel .nd-ap__elbox > .nd-ap__hint[hidden],
+#nd-amb-panel .nd-ap__elbody[hidden] {
+  display: none;
+}
+/* "Ajustar cada camada" (the rows' disclosure, closed by default) + the box's "Padrão" */
+#nd-amb-panel .nd-ap__elbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+#nd-amb-panel .nd-ap__elmore {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border: 1px solid rgba(var(--nda-a2-rgb), 0.40);
+  border-radius: 999px;
+  color: var(--nda-a2-fg-hi);
+  background: rgba(2, 7, 19, 0.35);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+#nd-amb-panel .nd-ap__elmore:hover {
+  border-color: rgba(var(--nda-a2-rgb), 0.75);
+  color: #ffffff;
+}
+#nd-amb-panel .nd-ap__elmore:focus-visible {
+  outline: 2px solid var(--nda-a2);
+  outline-offset: 2px;
+}
+#nd-amb-panel .nd-ap__elchev {
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 160ms ease;
+}
+#nd-amb-panel .nd-ap__elmore--open .nd-ap__elchev {
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+#nd-amb-panel .nd-ap__elhue.nd-ap__elrow--off .nd-ap__rowtext {
+  opacity: 0.55;
+}
+/* "Restaurar padrão" asks for a second click */
+#nd-amb-panel .nd-ap__btn--armed {
+  border-color: rgba(255, 196, 92, 0.85);
+  color: #ffe2a8;
+}
+#nd-amb-panel .nd-ap__sblegend {
+  color: var(--nda-a2-fg-hi);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+#nd-amb-panel .nd-ap__sblegend[hidden] {
+  display: none;
+}
+
+/* "Entrar após" segmented control */
+#nd-amb-panel .nd-ap__seg {
+  display: flex;
+  flex: 1;
+  max-width: 250px;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--nda-border-soft);
+  border-radius: 999px;
+  background: rgba(2, 7, 19, 0.45);
+}
+#nd-amb-panel .nd-ap__segopt {
+  position: relative;
+  flex: 1;
+}
+#nd-amb-panel .nd-ap__segopt span {
+  display: block;
+  padding: 4px 0;
+  border-radius: 999px;
+  color: var(--nda-subtext);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+}
+#nd-amb-panel .nd-ap__segopt:hover span {
+  color: #ffffff;
+}
+#nd-amb-panel .nd-ap__segopt input:checked + span {
+  color: var(--nda-on-accent);
+  background: var(--nda-grad);
+  box-shadow: 0 0 10px rgba(var(--nda-a1-rgb), 0.30);
+}
+#nd-amb-panel .nd-ap__segopt input:focus-visible + span {
+  outline: 2px solid var(--nda-a2-fg);
+  outline-offset: 1px;
+}
+
+/* actions */
+#nd-amb-panel .nd-ap__actions {
+  display: flex;
+  gap: 8px;
+}
+#nd-amb-panel .nd-ap__btn {
+  flex: 1;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--nda-border);
+  border-radius: 999px;
+  color: var(--nda-text);
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 140ms ease, box-shadow 140ms ease;
+}
+#nd-amb-panel .nd-ap__btn:hover {
+  background: rgba(var(--nda-a2-rgb), 0.10);
+}
+#nd-amb-panel .nd-ap__btn--primary {
+  border-color: transparent;
+  color: var(--nda-on-accent);
+  background: var(--nda-grad);
+  box-shadow: var(--nda-glow);
+}
+#nd-amb-panel .nd-ap__btn--primary:hover {
+  background: var(--nda-grad-hi);
+  box-shadow: 0 0 18px rgba(var(--nda-a1-rgb), 0.55), 0 0 30px rgba(var(--nda-a2-rgb), 0.30);
+}
+#nd-amb-panel .nd-ap__btn--primary:active {
+  background: var(--nda-grad-press);
+}
+#nd-amb-panel .nd-ap__foot {
+  margin: -2px 0 0;
+  color: var(--nda-muted);
+  font-size: 11px;
+  text-align: center;
+}
+#nd-amb-panel .nd-ap__foot:empty {
+  display: none;
+}
+/* "Ambiente": "Testar agora" / "Restaurar padrão" stay at the bottom of the
+   pane while it scrolls */
+#nd-amb-panel .nd-ap__sticky {
+  position: sticky;
+  bottom: -14px;                    /* the pane's bottom padding */
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 -16px -14px;
+  padding: 10px 16px 12px;
+  border-top: 1px solid var(--nda-border-soft);
+  background: linear-gradient(180deg, rgba(10, 26, 56, 0.96), rgb(9, 24, 52) 40%);
+}
+#nd-amb-panel :is(.nd-ap__close, .nd-ap__btn, .nd-ap__switch):focus-visible {
+  outline: 2px solid var(--nda-a2-fg);
+  outline-offset: 2px;
+}
+#nd-amb-panel .nd-ap__hint--warn {
+  color: color-mix(in srgb, var(--nda-a1-fg) 45%, #fff);
+}
+
+/* "Ritmo do visual": Automático / Cada batida / Graves */
+#nd-amb-panel .nd-ap__rhythm {
+  gap: 7px;
+  padding: 9px 11px 9px;
+}
+#nd-amb-panel .nd-ap__seg--wide {
+  max-width: none;
+}
+
+#nd-amb-panel .nd-ap__btn--small {
+  flex: none;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+#nd-amb-panel .nd-ap__note {
+  margin: 0;
+  padding: 6px 9px;
+  border: 1px solid rgba(var(--nda-a1-rgb), 0.28);
+  border-radius: 8px;
+  color: color-mix(in srgb, var(--nda-a1-fg) 28%, #fff);
+  background: rgba(var(--nda-a1-rgb), 0.10);
+  font-size: 11.5px;
+}
+
+/* 19a. Tabs ("Ambiente" / "Cores" / "Wallpaper"): a strip under the title,
+        the selected one gets the accent gradient underline */
+#nd-amb-panel .nd-ap__tabs {
+  display: flex;
+  flex: none;
+  gap: 4px;
+  padding: 2px 12px 0;
+  border-bottom: 1px solid var(--nda-border-soft);
+}
+#nd-amb-panel .nd-ap__tab {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 9px 9px 0 0;
+  color: var(--nda-subtext);
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+#nd-amb-panel .nd-ap__tab svg {
+  flex: none;
+}
+#nd-amb-panel .nd-ap__tab:hover {
+  color: #ffffff;
+  background: rgba(var(--nda-line-rgb), 0.07);
+}
+#nd-amb-panel .nd-ap__tab[aria-selected="true"] {
+  color: #ffffff;
+}
+#nd-amb-panel .nd-ap__tab[aria-selected="true"] svg {
+  color: var(--nda-a2-fg);
+  filter: drop-shadow(0 0 4px rgba(var(--nda-a2-rgb), 0.6));
+}
+#nd-amb-panel .nd-ap__tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -1px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--nda-grad);
+  box-shadow: 0 0 10px rgba(var(--nda-a1-rgb), 0.45);
+}
+#nd-amb-panel .nd-ap__tab:focus-visible {
+  outline: 2px solid var(--nda-a2-fg);
+  outline-offset: -3px;
+}
+#nd-amb-panel .nd-ap__head {
+  border-bottom: 0;
+  padding-bottom: 6px;
+}
+
+/* option cards of the "Cores" and "Wallpaper" tabs (same language as the
+   visualizer cards: soft frame, 2 px gradient frame + check when chosen) */
+#nd-amb-panel .nd-ap__opt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 7px 6px 6px;
+  border: 1px solid var(--nda-border-soft);
+  border-radius: 10px;
+  color: var(--nda-text);
+  background: rgba(var(--nda-text-rgb), 0.035);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+}
+#nd-amb-panel .nd-ap__opt:hover {
+  border-color: var(--nda-border);
+  background: rgba(var(--nda-line-rgb), 0.07);
+}
+#nd-amb-panel .nd-ap__opt--on,
+#nd-amb-panel .nd-ap__opt--on:hover {
+  padding: 6px 5px 5px;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(rgb(15, 35, 70), rgb(15, 35, 70)) padding-box,
+    var(--nda-opt-ring, var(--nda-grad)) border-box;
+  box-shadow: 0 0 16px rgba(var(--nda-a1-rgb), 0.24), 0 0 22px rgba(var(--nda-a2-rgb), 0.14);
+}
+#nd-amb-panel .nd-ap__opt:has(.nd-ap__radio:focus-visible),
+#nd-amb-panel .nd-ap__match:focus-visible {
+  outline: 1.5px dashed var(--nda-a2-fg-hi);
+  outline-offset: 3px;
+}
+#nd-amb-panel .nd-ap__pname {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  min-height: 2.4em;
+  color: var(--nda-text);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+#nd-amb-panel .nd-ap__opt--on .nd-ap__pname {
+  color: #ffffff;
+}
+#nd-amb-panel .nd-ap__check {
+  display: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: #020713;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+#nd-amb-panel .nd-ap__check svg {
+  width: 12px;
+  height: 12px;
+}
+#nd-amb-panel .nd-ap__opt--on .nd-ap__check {
+  display: grid;
+}
+
+/* 19b. "Cores": preset grid (each card is framed in its own pair when
+        chosen), "Personalizado" editor, "Combinar com o wallpaper" */
+#nd-amb-panel .nd-ap__pals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+#nd-amb-panel .nd-ap__pal {
+  --nda-opt-ring: linear-gradient(135deg, var(--c1), var(--c2));
+}
+#nd-amb-panel .nd-ap__pal.nd-ap__opt--on {
+  box-shadow: 0 0 14px color-mix(in srgb, var(--c1) 34%, transparent), 0 0 20px color-mix(in srgb, var(--c2) 22%, transparent);
+}
+#nd-amb-panel .nd-ap__pal {
+  padding-inline: 3px;
+}
+#nd-amb-panel .nd-ap__pal.nd-ap__opt--on {
+  padding-inline: 2px;
+}
+#nd-amb-panel .nd-ap__pal .nd-ap__pname {
+  display: block;
+  min-height: 0;
+  overflow: hidden;
+  font-size: 10.5px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+#nd-amb-panel .nd-ap__pal .nd-ap__sw {
+  width: calc(100% - 4px);
+}
+#nd-amb-panel .nd-ap__swtag {          /* "Neon Drift": the theme's original pair */
+  position: absolute;
+  left: 3px;
+  bottom: 2px;
+  padding: 0 4px;
+  border-radius: 4px;
+  color: #ffffff;
+  background: rgba(2, 7, 19, 0.62);
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+#nd-amb-panel .nd-ap__sw {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 30px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--c1, var(--nda-a1)) 0%, var(--c2, var(--nda-a2)) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16), 0 3px 10px rgba(0, 0, 0, 0.35);
+}
+#nd-amb-panel .nd-ap__sw--sm {
+  flex: none;
+  width: 52px;
+  height: 28px;
+}
+#nd-amb-panel .nd-ap__pen {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.95);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+}
+#nd-amb-panel .nd-ap__opt--on .nd-ap__pen {
+  display: none;
+}
+
+#nd-amb-panel .nd-ap__custom {
+  gap: 9px;
+  padding: 10px 11px 9px;
+}
+#nd-amb-panel .nd-ap__cpair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+#nd-amb-panel .nd-ap__cchip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  height: 42px;
+  padding: 0 10px 0 6px;
+  border: 1px solid var(--nda-border-soft);
+  border-radius: 10px;
+  color: var(--nda-text);
+  background: rgba(2, 7, 19, 0.45);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+#nd-amb-panel .nd-ap__cchip:hover {
+  border-color: var(--nda-border);
+}
+#nd-amb-panel .nd-ap__cchip[aria-pressed="true"] {
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9), 0 0 12px rgba(var(--nda-line-rgb), 0.25);
+}
+#nd-amb-panel .nd-ap__cdot {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+#nd-amb-panel .nd-ap__ctext {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+#nd-amb-panel .nd-ap__clabel {
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+#nd-amb-panel .nd-ap__chex {
+  color: var(--nda-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+}
+#nd-amb-panel .nd-ap__iconbtn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--nda-border);
+  border-radius: 50%;
+  color: var(--nda-text);
+  background: transparent;
+  cursor: pointer;
+}
+#nd-amb-panel .nd-ap__iconbtn:hover {
+  color: #ffffff;
+  background: rgba(var(--nda-line-rgb), 0.1);
+}
+#nd-amb-panel .nd-ap__gradbar {
+  height: 12px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+#nd-amb-panel .nd-ap__hsv {
+  grid-template-columns: 62px 1fr 40px;
+}
+/* painted tracks: hue rainbow, saturation and brightness of the colour
+   being edited (the extension sets --nda-track / --nda-thumb) */
+#nd-amb-panel .nd-ap__slider--paint::-webkit-slider-runnable-track {
+  height: 8px;
+  background: var(--nda-track, rgba(var(--nda-muted-rgb), 0.26));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+#nd-amb-panel .nd-ap__slider--paint::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  margin-top: -4px;
+  background: var(--nda-thumb, #ffffff);
+  box-shadow: 0 0 0 2px #ffffff, 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+#nd-amb-panel .nd-ap__slider--paint:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 10px rgba(255, 255, 255, 0.5);
+}
+#nd-amb-panel .nd-ap__slider--paint:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--nda-a2-fg);
+}
+#nd-amb-panel .nd-ap__hexrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#nd-amb-panel .nd-ap__hexrow .nd-ap__rlabel {
+  width: 62px;
+  flex: none;
+}
+#nd-amb-panel .nd-ap__hexin {
+  flex: none;
+  width: 96px;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--nda-border);
+  border-radius: 8px;
+  color: var(--nda-text);
+  background: rgba(2, 7, 19, 0.55);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  outline: none;
+}
+#nd-amb-panel .nd-ap__hexin:focus {
+  border-color: var(--nda-a2-fg);
+  box-shadow: 0 0 10px rgba(var(--nda-a2-rgb), 0.25);
+}
+#nd-amb-panel .nd-ap__hexrow .nd-ap__hint {
+  min-width: 0;
+  color: color-mix(in srgb, var(--nda-a1-fg) 45%, #fff);
+}
+
+#nd-amb-panel .nd-ap__match {
+  flex-direction: row;
+  gap: 11px;
+  width: 100%;
+  padding: 9px 11px;
+  font-family: inherit;
+  text-align: left;
+}
+#nd-amb-panel .nd-ap__match.nd-ap__opt--on {
+  padding: 8px 10px;
+}
+#nd-amb-panel .nd-ap__match .nd-ap__rowtext {
+  flex: 1;
+}
+#nd-amb-panel .nd-ap__matchicon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  color: var(--nda-on-accent);
+  background: var(--nda-grad);
+  box-shadow: 0 0 12px rgba(var(--nda-a1-rgb), 0.35);
+}
+
+/* 19c. "Wallpaper": the three sources with 16:9 thumbnails, the file box */
+#nd-amb-panel .nd-ap__walls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+#nd-amb-panel .nd-ap__wthumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 7px;
+  color: var(--nda-muted);
+  /* longhands, no background-image: the extension sets the picture inline */
+  background-color: #06142b;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(var(--nda-line-rgb), 0.16);
+}
+#nd-amb-panel .nd-ap__opt:not(.nd-ap__opt--on) .nd-ap__wthumb--img {
+  filter: saturate(0.85) brightness(0.85);
+}
+#nd-amb-panel .nd-ap__wthumb--img .nd-ap__wph {
+  display: none;
+}
+#nd-amb-panel .nd-ap__wph {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(var(--nda-line-rgb), 0.08);
+  box-shadow: inset 0 0 0 1px var(--nda-border);
+}
+#nd-amb-panel .nd-ap__wthumb .nd-ap__check {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+#nd-amb-panel .nd-ap__whint {
+  margin: 8px 0 0;
+  color: var(--nda-muted);
+  font-size: 11.5px;
+}
+#nd-amb-panel .nd-ap__filebox {
+  gap: 8px;
+}
+#nd-amb-panel .nd-ap__filebox [data-ref="fileInfo"] {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+#nd-amb-panel .nd-ap__btnrow {
+  display: flex;
+  gap: 8px;
+}
+#nd-amb-panel .nd-ap__btnrow .nd-ap__btn {
+  flex: 1;
+}
+#nd-amb-panel .nd-ap__btn:disabled,
+#nd-amb-panel .nd-ap__btn:disabled:hover {
+  border-color: var(--nda-border-soft);
+  color: var(--nda-muted);
+  background: transparent;
+  cursor: default;
+}
+#nd-amb-panel .nd-ap__note--warn {
+  border-color: rgba(255, 110, 140, 0.5);
+  color: #ffd3dc;
+  background: rgba(255, 70, 110, 0.13);
+}
+#nd-amb-panel .nd-ap__file {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nd-amb-panel,
+  #nd-amb-panel .nd-ap__switch,
+  #nd-amb-panel .nd-ap__switch::before,
+  #nd-amb-panel .nd-ap__tab,
+  #nd-amb-panel .nd-ap__opt,
+  #nd-amb-panel .nd-ap__cchip {
+    transition: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   The "modo ambiente suave" note (overlay corner
+        and panel preview), the docked mini preview of "Ambiente" and the
+        highlight chip of the part being changed
+   -------------------------------------------------------------------------- */
+#nd-ambient .nd-amb__note {
+  position: absolute;
+  left: 28px;
+  bottom: 26px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(560px, 62vw);
+  padding: 7px 15px 7px 12px;
+  border: 1px solid rgba(var(--nda-a2-rgb), 0.30);
+  border-radius: 999px;
+  color: var(--nda-text);
+  background: rgba(2, 7, 19, 0.62);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 2px rgba(2, 7, 19, 0.8);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 1200ms ease, transform 1200ms ease;
+  pointer-events: none;
+}
+#nd-ambient .nd-amb__note:empty {
+  display: none;
+}
+#nd-ambient .nd-amb__note::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--nda-a2);
+  box-shadow: 0 0 8px var(--nda-a2);
+}
+#nd-ambient.nd-amb--note .nd-amb__note {
+  opacity: 1;
+  transform: none;
+  transition: opacity 700ms ease 500ms, transform 700ms cubic-bezier(0.22, 0.61, 0.36, 1) 500ms;
+}
+
+/* the docked mini preview: a sticky, zero-height holder at the top of the
+   "Ambiente" pane; the extension docks it once the big preview has scrolled away
+   (a copy of the same canvas, so it always shows the current settings) */
+#nd-amb-panel .nd-ap__dockwrap {
+  position: sticky;
+  top: -12px;                       /* the pane's top padding */
+  z-index: 4;
+  flex: none;
+  height: 0;
+  margin: 0 0 -12px;                /* no gap of its own in the pane's column */
+  pointer-events: none;
+}
+#nd-amb-panel .nd-ap__dockwrap::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -16px;
+  right: -16px;
+  height: 112px;
+  background: linear-gradient(180deg, rgba(15, 34, 70, 0.94) 0%, rgba(15, 34, 70, 0.82) 72%, rgba(15, 34, 70, 0) 100%);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+#nd-amb-panel .nd-ap__dock {
+  position: absolute;
+  top: 7px;
+  left: 0;
+  right: 0;
+  width: 265px;
+  height: 92px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(var(--nda-a2-rgb), 0.45);
+  border-radius: 12px;
+  background: #020713;
+  box-shadow:
+    0 0 0 1px rgba(var(--nda-a1-rgb), 0.10),
+    0 0 18px rgba(var(--nda-a2-rgb), 0.24),
+    0 12px 28px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transform: translateY(-30px) scale(0.84);
+  transform-origin: 50% 0;
+  transition: opacity 160ms ease, transform 220ms cubic-bezier(0.4, 0, 1, 1);
+  cursor: pointer;
+  pointer-events: none;
+}
+#nd-amb-panel .nd-ap__dock canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+#nd-amb-panel .nd-ap__body--docked {
+  scroll-padding-top: 112px;        /* keyboard focus lands below the dock */
+}
+#nd-amb-panel .nd-ap__body--docked .nd-ap__dockwrap::before {
+  opacity: 1;
+}
+#nd-amb-panel .nd-ap__body--docked .nd-ap__dock {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition: opacity 240ms ease, transform 380ms cubic-bezier(0.18, 0.9, 0.24, 1.08);
+}
+#nd-amb-panel .nd-ap__body--docked .nd-ap__dock:hover {
+  border-color: rgba(var(--nda-a2-rgb), 0.75);
+}
+
+/* the highlight chip (preview: in the badge's place; dock: at the bottom) */
+#nd-amb-panel .nd-ap__chip {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  max-width: calc(100% - 14px);
+  padding: 2px 9px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--nda-a1-rgb), 0.50);
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(2, 7, 19, 0.72);
+  box-shadow: 0 0 10px rgba(var(--nda-a1-rgb), 0.30);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity 160ms ease, transform 200ms ease;
+  pointer-events: none;
+}
+#nd-amb-panel .nd-ap__chip--on {
+  opacity: 1;
+  transform: none;
+}
+#nd-amb-panel .nd-ap__chip--dock {
+  top: auto;
+  right: 0;
+  bottom: 5px;
+  left: 0;
+  width: max-content;
+  max-width: 92%;
+  margin: 0 auto;
+  font-size: 10px;
+  transform: translateY(3px);
+}
+#nd-amb-panel .nd-ap__badge {
+  transition: opacity 160ms ease;
+}
+#nd-amb-panel .nd-ap__preview--solo .nd-ap__badge {
+  opacity: 0;
+}
+/* the soft mode's note in the preview (fades out after a few seconds) */
+#nd-amb-panel .nd-ap__pvnote {
+  position: absolute;
+  right: 7px;
+  bottom: 6px;
+  left: 7px;
+  padding: 3px 9px;
+  border: 1px solid rgba(var(--nda-a2-rgb), 0.28);
+  border-radius: 8px;
+  color: var(--nda-text);
+  background: rgba(2, 7, 19, 0.70);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 900ms ease, transform 900ms ease;
+  pointer-events: none;
+}
+#nd-amb-panel .nd-ap__pvnote--on {
+  opacity: 1;
+  transform: none;
+  transition: opacity 500ms ease 250ms, transform 500ms ease 250ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nd-ambient .nd-amb__note,
+  #nd-ambient.nd-amb--note .nd-amb__note,
+  #nd-amb-panel .nd-ap__dock,
+  #nd-amb-panel .nd-ap__body--docked .nd-ap__dock,
+  #nd-amb-panel .nd-ap__chip,
+  #nd-amb-panel .nd-ap__chip--on,
+  #nd-amb-panel .nd-ap__pvnote,
+  #nd-amb-panel .nd-ap__pvnote--on {
+    transform: none;
+  }
+  #nd-amb-panel .nd-ap__dock,
+  #nd-amb-panel .nd-ap__body--docked .nd-ap__dock {
+    transition: opacity 160ms linear;
+  }
+}
+
+/* in windows under 1366 px the corner note sat on the
+   title / artist and on the "Testar agora" hint (both centred at the
+   bottom): it moves to the top-left corner there */
+@media (max-width: 1365px) {
+  #nd-ambient .nd-amb__note {
+    top: 24px;
+    bottom: auto;
+    max-width: min(520px, calc(100vw - 56px));
+    transform: translateY(-6px);
+  }
+}
+@media (max-width: 1365px) and (prefers-reduced-motion: reduce) {
+  #nd-ambient .nd-amb__note {
+    transform: none;
+  }
+}
+
+/* panel additions of the extension: the untested-version note and the
+   "theme not active" note of the Wallpaper tab */
+#nd-amb-panel .nd-ap__compat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 16px 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(var(--nda-a2-rgb), 0.08);
+  box-shadow: inset 0 0 0 1px var(--nda-border-soft);
+}
+#nd-amb-panel .nd-ap__compat .nd-ap__hint {
+  flex: 1;
+  margin: 0;
+}
+#nd-amb-panel .nd-ap__compat .nd-ap__btn {
+  flex: none;
+}
+#nd-amb-panel .nd-ap__notheme {
+  display: block;
+  margin: 0 0 10px;
+}
+
+/* kept last: the build makes every rule of the extension !important, so a
+   later rule that sets display on an element must never show it while it is
+   [hidden] (the doubled id outranks every other rule here) */
+#nd-amb-panel#nd-amb-panel[hidden],
+#nd-amb-panel#nd-amb-panel [hidden] {
+  display: none !important;
+}

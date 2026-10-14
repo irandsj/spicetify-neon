@@ -1,0 +1,16 @@
+# local material that is never published
+research/
+tools/work/
+tools/sim/
+tools/dev/
+dist/
+docs/PRODUCT-PLAN.md
+**/background.png
+
+# local / build artifacts
+node_modules/
+*.log
+out/
+tmp/
+cache/
+__pycache__/

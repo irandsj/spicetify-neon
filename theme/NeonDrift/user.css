@@ -1,0 +1,1537 @@
+/* ==========================================================================
+   NeonDrift 1.0.0 - neon cyan / pink glass theme for Spotify (Spicetify)
+   MIT License (c) 2026 Iran. Tested on Spotify 1.3.4.258 + Spicetify 2.45.3
+   (works with replace_colors = 0 or 1).
+
+   Pairs with the NeonDrift Ambient extension (extension/neondrift-ambient.js):
+   its "Personalizar NeonDrift" panel changes this theme's two accent colours
+   and its wallpaper (album cover, a picture from the computer or the neon
+   gradient). Without the extension the theme shows the default Neon Drift
+   pair over a neon gradient. Contract between the two: section 0.
+
+   Notes for future edits
+   - Spotify's Encore colour tokens live in `@layer encore`, so the plain
+     (un-layered) rules below override them without !important.
+   - Cascade order: Spicetify links this file from <body>, so it comes AFTER
+     every Spotify stylesheet (xpui-snapshot.css and the route/chunk CSS that
+     Spotify appends to <head>). A rule here with the SAME specificity as
+     Spotify's base rule wins, while Spotify's :hover / :focus / state rules
+     (one class more) still win over it. Use that instead of doubling classes
+     whenever Spotify's own hover feedback must keep working; !important is
+     only needed against inline styles or more specific Spotify rules.
+   - Stable hooks are preferred: #ids, [data-testid], [role], [aria-*],
+     [data-encore-id] and the Encore tokens. Spotify's scrambled class names
+     (e.g. .kqeAXHJzFfJ_27frg58J) change with every Spotify update; each one
+     used here is tagged "1.3.4" with what it is (on its line, or in the
+     comment heading its block), so after an update search this file for
+     "1.3.4" and re-check those selectors (docs/COMPATIBILITY.md).
+   - Where Spicetify's css-map has (or had) a readable name for a scrambled
+     class, the selector is written :is(.scrambled, .readable-name): both arms
+     are single classes, so the specificity stays the same, and the rule keeps
+     working when a css-map update renames the class.
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   0. Theme contract (read by the NeonDrift Ambient extension)
+      --neondrift-theme: the contract version. While it is >= 1 the extension
+      writes the palette inputs of section 1 and the wallpaper variables of
+      section 4 (--nd-wallpaper, --nd-wall-dim, --nd-wall-blur, --nd-blur)
+      into <style id="nd-look-vars"> (html:root, more specific than :root)
+      and sets html[data-nd-wall="loading"] while a picture loads. A future
+      version may add names; it never renames or removes one.
+   -------------------------------------------------------------------------- */
+:root {
+  --neondrift-theme: 1;
+}
+
+
+/* --------------------------------------------------------------------------
+   1. Palette
+      Two accent colours drive every coloured detail of the theme (and the
+      ambient visualizers): --nd-a1 (primary: fills, gradient start; default
+      pink #ff4dff) and --nd-a2 (secondary: text / icon accents, borders,
+      gradient end; default cyan #35e7ff). The extension ("Cores" tab) overrides
+      the values below from an `html:root` rule in <style id="nd-look-vars">
+      (more specific than :root, so it wins whatever the order). It also
+      computes the values CSS cannot: the rgb channel lists (used as
+      rgba(var(--nd-a2-rgb), .3)), the contrast-safe text versions (-fg,
+      -ink) and the text colour on accent fills (--nd-on-accent: navy or
+      white, by luminance). Everything else is derived here with color-mix.
+      The navy surfaces stay navy for every pair.
+      Never write an accent literal (#ff4dff, 53, 231, 255...) in this file:
+      use these variables, or the colours will not follow the chosen pair.
+   -------------------------------------------------------------------------- */
+:root {
+  /* inputs (defaults = "Neon Drift"; the extension keeps them in sync) */
+  --nd-a1: #ff4dff;                --nd-a1-rgb: 255, 77, 255;
+  --nd-a2: #35e7ff;                --nd-a2-rgb: 53, 231, 255;
+  --nd-a1-fg: #ff4dff;             /* a1 as text / icon on navy (>= 4.5:1) */
+  --nd-a2-fg: #35e7ff;             /* a2 as text / icon on navy (>= 4.5:1) */
+  --nd-a2-ink: #1d7c8e;            /* a2 as text on the ice-white pills (>= 4.6:1) */
+  --nd-on-accent: #020713;         /* text / glyphs on accent fills (navy or white) */
+  --nd-line-rgb: 114, 238, 255;    /* light a2: borders, rings, tinted fills */
+  --nd-a1-soft-rgb: 255, 175, 255; /* a1 / a2 mixed with white: glow cores */
+  --nd-a2-soft-rgb: 174, 245, 255;
+  --nd-text: #ebfdff;              --nd-text-rgb: 235, 253, 255;      /* white + a 10% tint of a2 */
+  --nd-subtext: #a9ddff;           --nd-subtext-rgb: 169, 221, 255;   /* #e7d8ff + 35% of a2 */
+  --nd-muted: #9bb4dc;             --nd-muted-rgb: 155, 180, 220;     /* #b4a7d3 + 20% of a2 */
+  --nd-green-rotate: 47deg;        /* Spotify's baked-in green images -> a2-fg: hue-rotate + saturate + brightness */
+  --nd-green-sat: 1.3;             /* (the extension fits all three to the pair; CSS hue-rotate alone misses by 20-26 deg) */
+  --nd-green-bright: 1.1;
+  --nd-announce: #4a8dff;          --nd-announce-rgb: 74, 141, 255;   /* "Novo" dots, notifications: a2 turned ~31 deg */
+  --nd-announce-hi: #7db8ff;       /* the same as text (>= 4.5:1) */
+
+  /* derived */
+  --nd-a1-hi: color-mix(in srgb, var(--nd-a1) 75%, #fff);
+  --nd-a2-hi: color-mix(in srgb, var(--nd-a2) 70%, #fff);
+  --nd-a1-press: color-mix(in srgb, var(--nd-a1) 85%, #000);
+  --nd-a2-press: color-mix(in srgb, var(--nd-a2) 85%, #000);
+  --nd-a2-fg-hi: color-mix(in srgb, var(--nd-a2-fg) 70%, #fff);
+  --nd-a2-pale: color-mix(in srgb, var(--nd-a2-fg) 44%, #fff);
+  --nd-a12: color-mix(in srgb, var(--nd-a1) 50%, var(--nd-a2));   /* the gradient's middle */
+
+  --nd-bg: #020713;
+  --nd-bg-2: #031025;
+  --nd-surface: #0b1a36;          /* opaque menus / dialogs */
+  --nd-surface-hi: #15305a;
+  --nd-glass: rgba(4, 15, 36, 0.50);         /* main view */
+  --nd-glass-strong: rgba(3, 12, 28, 0.62);  /* side panels, player */
+  --nd-glass-bar: rgba(3, 12, 28, 0.95);     /* sticky bars (content scrolls under them) */
+  --nd-border: rgba(var(--nd-line-rgb), 0.30);
+  --nd-border-soft: rgba(var(--nd-line-rgb), 0.16);
+  --nd-border-hot: rgba(var(--nd-a1-rgb), 0.50);
+  --nd-grad: linear-gradient(135deg, var(--nd-a1) 0%, var(--nd-a2) 100%);
+  --nd-grad-hi: linear-gradient(135deg, var(--nd-a1-hi) 0%, var(--nd-a2-hi) 100%);
+  --nd-grad-press: linear-gradient(135deg, var(--nd-a1-press) 0%, var(--nd-a2-press) 100%);
+  --nd-tint: linear-gradient(180deg, rgba(var(--nd-a1-rgb), 0.13) 0%, rgba(var(--nd-a2-rgb), 0.05) 60%, rgba(2, 7, 19, 0) 100%);
+  --nd-glow: 0 0 14px rgba(var(--nd-a1-rgb), 0.38), 0 0 22px rgba(var(--nd-a2-rgb), 0.18);
+  --nd-text-shadow: 0 1px 2px rgba(2, 7, 19, 0.85), 0 0 8px rgba(2, 7, 19, 0.45);
+  --nd-blur: 3px;                 /* wallpaper blur behind the panels (the extension: the first 3 px of "Desfoque do layout", 0 = sharp) */
+
+  /* Spotify fades disabled controls to .3, which vanishes on glass; .55 still
+     reads as disabled (about 4.6:1 on the bars) without looking broken */
+  --encore-opacity-disabled: 0.55;
+
+  /* Spotify variables with neutral-grey fallbacks (#282828 / #333 / #121212).
+     --card-color: Spotify sets it inline on cards that have a real colour;
+     everything else (grid folder tiles, loading cards) falls back to it. */
+  --image-placeholder-bg-color: #0e2140;
+  --card-color: #0e2140;
+  --carousel-start-chevron-gradient: rgba(3, 12, 28, 0.80);
+  --carousel-end-chevron-gradient: rgba(3, 12, 28, 0.80);
+  --sort-box-text-color: var(--nd-subtext);
+  --generic-tooltip-background-color: var(--nd-surface);
+}
+
+
+/* --------------------------------------------------------------------------
+   2. Spicetify variables (color.ini [Neon] holds the default pair's values).
+      Needed because replace_colors = 0 writes Spotify defaults to colors.css;
+      Marketplace and a few Spicetify rules read these directly. The accent
+      ones follow the pair chosen in the "Cores" tab (section 1).
+   -------------------------------------------------------------------------- */
+:root {
+  --spice-text: var(--nd-text);        --spice-rgb-text: var(--nd-text-rgb);
+  --spice-subtext: var(--nd-subtext);  --spice-rgb-subtext: var(--nd-subtext-rgb);
+  --spice-main: #020713;               --spice-rgb-main: 2, 7, 19;
+  --spice-main-elevated: #0c1c3a;      --spice-rgb-main-elevated: 12, 28, 58;
+  --spice-highlight: #0a1830;          --spice-rgb-highlight: 10, 24, 48;
+  --spice-highlight-elevated: #16305a; --spice-rgb-highlight-elevated: 22, 48, 90;
+  --spice-sidebar: #031025;            --spice-rgb-sidebar: 3, 16, 37;
+  --spice-player: #06142b;             --spice-rgb-player: 6, 20, 43;
+  --spice-card: #0e2140;               --spice-rgb-card: 14, 33, 64;
+  --spice-shadow: #000000;             --spice-rgb-shadow: 0, 0, 0;
+  --spice-selected-row: var(--nd-text); --spice-rgb-selected-row: var(--nd-text-rgb);
+  --spice-button: var(--nd-a2);        --spice-rgb-button: var(--nd-a2-rgb);
+  --spice-button-active: var(--nd-a2-hi); --spice-rgb-button-active: var(--nd-line-rgb);
+  --spice-button-disabled: #6880ae;    --spice-rgb-button-disabled: 104, 128, 174;
+  --spice-tab-active: #1b3766;         --spice-rgb-tab-active: 27, 55, 102;
+  --spice-notification: var(--nd-announce); --spice-rgb-notification: var(--nd-announce-rgb);
+  --spice-notification-error: #e0245e; --spice-rgb-notification-error: 224, 36, 94;
+  --spice-misc: var(--nd-muted);       --spice-rgb-misc: var(--nd-muted-rgb);
+}
+
+
+/* --------------------------------------------------------------------------
+   3. Encore colour sets (Spotify's design tokens)
+   -------------------------------------------------------------------------- */
+
+/* 3a. Base dark set: navy surfaces, ice-blue text, cyan accents.
+       Spotify's light theme is only used for dialogs, snackbars and a few
+       popovers; it is mapped to the same navy set so they all match.
+       Base/press stay OPAQUE: toggle knobs, inputs and sticky headers use them. */
+.encore-dark-theme,
+.encore-dark-theme .encore-base-set,
+.encore-light-theme,
+.encore-light-theme .encore-base-set {
+  color-scheme: dark;
+  --background-base: #050f24;
+  --background-highlight: rgba(14, 36, 70, 0.82);
+  --background-press: #020713;
+  --background-elevated-base: #0b1a36;
+  --background-elevated-highlight: #15305a;
+  --background-elevated-press: #08152c;
+  --background-tinted-base: rgba(var(--nd-line-rgb), 0.10);
+  --background-tinted-highlight: rgba(var(--nd-line-rgb), 0.17);
+  --background-tinted-press: rgba(var(--nd-line-rgb), 0.25);
+  --text-base: var(--nd-text);
+  --text-subdued: var(--nd-subtext);
+  --text-bright-accent: var(--nd-a2-fg);
+  --text-negative: #ff8fad;
+  --text-warning: #ffb547;
+  --text-positive: var(--nd-a2-fg);
+  --text-announcement: var(--nd-announce-hi);
+  --essential-base: var(--nd-text);
+  --essential-subdued: var(--nd-muted);
+  --essential-bright-accent: var(--nd-a2-fg);
+  --essential-negative: #ff4d88;
+  --essential-warning: #ffa42b;
+  --essential-positive: var(--nd-a2-fg);
+  --essential-announcement: var(--nd-announce);
+  --decorative-base: var(--nd-text);
+  --decorative-subdued: rgba(var(--nd-line-rgb), 0.20);
+}
+.encore-light-theme > *,
+.encore-light-theme .encore-base-set > * {
+  --parents-essential-base: var(--nd-text);
+}
+
+/* 3b. Bright accent (primary buttons, connect bar, badges): hot pink fill,
+       near-black glyphs. Not scoped, so dialogs/portals get it too. */
+.encore-dark-theme .encore-bright-accent-set,
+.encore-light-theme .encore-bright-accent-set {
+  color-scheme: light;
+  --background-base: var(--nd-a1);
+  --background-highlight: var(--nd-a1-hi);
+  --background-press: var(--nd-a1-press);
+  --background-elevated-base: var(--nd-a1-hi);
+  --background-elevated-highlight: var(--nd-a1-hi);
+  --background-elevated-press: var(--nd-a1-press);
+  --background-tinted-base: var(--nd-a1);
+  --background-tinted-highlight: var(--nd-a1-hi);
+  --background-tinted-press: var(--nd-a1-press);
+  --text-base: var(--nd-on-accent);
+  --text-subdued: var(--nd-on-accent);
+  --text-bright-accent: var(--nd-on-accent);
+  --text-negative: var(--nd-on-accent);
+  --text-warning: var(--nd-on-accent);
+  --text-positive: var(--nd-on-accent);
+  --text-announcement: var(--nd-on-accent);
+  --essential-base: var(--nd-on-accent);
+  --essential-subdued: var(--nd-on-accent);
+  --essential-bright-accent: var(--nd-on-accent);
+  --essential-negative: var(--nd-on-accent);
+  --essential-warning: var(--nd-on-accent);
+  --essential-positive: var(--nd-on-accent);
+  --essential-announcement: var(--nd-on-accent);
+  --decorative-base: var(--nd-on-accent);
+  --decorative-subdued: var(--nd-a1-press);
+}
+.encore-dark-theme .encore-bright-accent-set > *,
+.encore-light-theme .encore-bright-accent-set > * {
+  --parents-essential-base: var(--nd-on-accent);
+}
+
+/* 3c. Positive (was Spotify green) -> cyan */
+.encore-dark-theme .encore-positive-set,
+.encore-light-theme .encore-positive-set {
+  --background-base: var(--nd-a2);
+  --background-highlight: var(--nd-a2-hi);
+  --background-press: var(--nd-a2-press);
+  --background-elevated-base: var(--nd-a2-hi);
+  --background-elevated-highlight: var(--nd-a2-hi);
+  --background-elevated-press: var(--nd-a2-press);
+  --background-tinted-base: var(--nd-a2);
+  --background-tinted-highlight: var(--nd-a2-hi);
+  --background-tinted-press: var(--nd-a2-press);
+  --decorative-subdued: var(--nd-a2-press);
+  --text-base: var(--nd-on-accent);
+  --text-subdued: var(--nd-on-accent);
+  --essential-base: var(--nd-on-accent);
+  --essential-subdued: var(--nd-on-accent);
+}
+.encore-dark-theme .encore-positive-subdued-set,
+.encore-light-theme .encore-positive-subdued-set {
+  --background-base: color-mix(in srgb, var(--nd-a2) 18%, #020713);
+  --background-highlight: color-mix(in srgb, var(--nd-a2) 24%, #020713);
+  --background-press: color-mix(in srgb, var(--nd-a2) 34%, #020713);
+  --background-elevated-base: color-mix(in srgb, var(--nd-a2) 24%, #020713);
+  --background-elevated-highlight: color-mix(in srgb, var(--nd-a2) 24%, #020713);
+  --background-elevated-press: color-mix(in srgb, var(--nd-a2) 34%, #020713);
+  --background-tinted-base: color-mix(in srgb, var(--nd-a2) 18%, #020713);
+  --background-tinted-highlight: color-mix(in srgb, var(--nd-a2) 18%, #020713);
+  --background-tinted-press: color-mix(in srgb, var(--nd-a2) 18%, #020713);
+  --text-base: var(--nd-a2-pale);
+  --text-subdued: var(--nd-a2-pale);
+  --text-bright-accent: var(--nd-a2-pale);
+  --text-positive: var(--nd-a2-pale);
+  --essential-base: var(--nd-a2-pale);
+  --essential-subdued: var(--nd-a2-pale);
+  --essential-bright-accent: var(--nd-a2-pale);
+  --essential-positive: var(--nd-a2-pale);
+  --decorative-base: var(--nd-a2-pale);
+  --decorative-subdued: color-mix(in srgb, var(--nd-a2) 30%, #020713);
+}
+
+/* 3d. Inverted light (white pills: selected chip, player play/pause, the
+       selected item of light-theme lists, which sets both classes on itself) */
+.encore-dark-theme .encore-inverted-light-set,
+.encore-dark-theme .encore-inverted-set,
+.encore-light-theme .encore-inverted-set,
+.encore-light-theme.encore-inverted-light-set,
+.encore-light-theme .encore-inverted-light-set {
+  --background-base: var(--nd-text);
+  --background-highlight: #ffffff;
+  --background-press: color-mix(in srgb, var(--nd-a2) 30%, #fff);
+  --background-elevated-base: color-mix(in srgb, var(--nd-a2) 16%, #fff);
+  --background-elevated-highlight: #ffffff;
+  --background-elevated-press: color-mix(in srgb, var(--nd-a2) 30%, #fff);
+  --background-tinted-base: var(--nd-text);
+  --background-tinted-highlight: #ffffff;
+  --background-tinted-press: color-mix(in srgb, var(--nd-a2) 30%, #fff);
+  --text-base: #020713;
+  --text-subdued: #3a4a6a;
+  --text-bright-accent: var(--nd-a2-ink);
+  --essential-base: #020713;
+  --essential-subdued: #5b6e92;
+  --essential-bright-accent: var(--nd-a2-ink);
+  --decorative-base: #020713;
+  --decorative-subdued: #c5dceb;
+}
+
+/* 3e. Dark frame sets (top bar, some menus) -> navy instead of black/grey */
+.encore-dark-theme .encore-muted-accent-set,
+.encore-dark-theme .encore-app-frame-set,
+.encore-dark-theme .encore-inverted-dark-set,
+.encore-light-theme .encore-muted-accent-set,
+.encore-light-theme .encore-inverted-dark-set {
+  --background-base: #031025;
+  --background-highlight: #0b1a36;
+  --background-press: #020713;
+  --background-elevated-base: #0b1a36;
+  --background-elevated-highlight: #15305a;
+  --background-elevated-press: #08152c;
+  --background-tinted-base: rgba(var(--nd-line-rgb), 0.13);
+  --background-tinted-highlight: rgba(var(--nd-line-rgb), 0.18);
+  --background-tinted-press: rgba(var(--nd-line-rgb), 0.25);
+  --text-subdued: var(--nd-subtext);
+  --text-bright-accent: var(--nd-a2-fg);
+  --essential-subdued: var(--nd-muted);
+  --essential-bright-accent: var(--nd-a2-fg);
+  --decorative-subdued: #15305a;
+}
+
+/* 3f. Announcement set ("Novidade" popovers, onboarding tips): was Spotify
+       blue #0d72ea with white text -> raised navy with ice text */
+.encore-dark-theme .encore-announcement-set,
+.encore-light-theme .encore-announcement-set {
+  color-scheme: dark;
+  --background-base: #15305a;
+  --background-highlight: #1d3d70;
+  --background-press: #0b1a36;
+  --background-elevated-base: #15305a;
+  --background-elevated-highlight: #1d3d70;
+  --background-elevated-press: #0b1a36;
+  --background-tinted-base: rgba(var(--nd-line-rgb), 0.13);
+  --background-tinted-highlight: rgba(var(--nd-line-rgb), 0.18);
+  --background-tinted-press: rgba(var(--nd-line-rgb), 0.25);
+  --text-base: var(--nd-text);
+  --text-subdued: var(--nd-subtext);
+  --text-bright-accent: var(--nd-a2-fg);
+  --text-announcement: var(--nd-text);
+  --essential-base: var(--nd-text);
+  --essential-subdued: var(--nd-subtext);
+  --essential-bright-accent: var(--nd-a2-fg);
+  --essential-announcement: var(--nd-text);
+  --decorative-base: var(--nd-text);
+  --decorative-subdued: #2a4f86;
+}
+.encore-dark-theme .encore-announcement-set > *,
+.encore-light-theme .encore-announcement-set > * {
+  --parents-essential-base: var(--nd-text);
+}
+
+
+/* --------------------------------------------------------------------------
+   4. App background + wallpaper
+   -------------------------------------------------------------------------- */
+html,
+body,
+#main,
+.Root,
+:is(.Root__top-container, .Root > :where(div:has(#main-view))) {
+  background-color: var(--nd-bg) !important;
+}
+
+/* Spotify's default grey (#b3b3b3) for anything that only inherits colour */
+body,
+dialog {
+  color: var(--nd-subtext);
+}
+
+/* isolation makes this a stacking context, so the negative z-index
+   wallpaper layers stay above its background and below every panel
+   (Spotify's own z-index layering of the panels keeps working). */
+:is(.Root__top-container, .Root > :where(div:has(#main-view))) {
+  isolation: isolate !important;
+  position: relative !important;
+}
+
+:is(.Root__top-container, .Root > :where(div:has(#main-view)))::before,
+:is(.Root__top-container, .Root > :where(div:has(#main-view)))::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* the wallpaper ("Wallpaper" tab of the extension's panel). The extension sets
+   --nd-wallpaper to url("...") of the chosen picture: its neon gradient, a
+   picture from the computer (kept in IndexedDB, shown through a blob: URL)
+   or the current album cover (follows the track). Without the extension the
+   gradient below (in the default pair) is the wallpaper.
+   --nd-wall-blur / --nd-wall-dim are "Desfoque do layout" (its part above
+   the panels' 3 px glass, see --nd-blur) and "Escurecer"; the blur gets an
+   overscan so its soft edge never shows (0 px = sharp, no overscan). While a picture
+   loads, html[data-nd-wall="loading"] hides the layer (no flash of the
+   default picture), then it fades in. */
+:is(.Root__top-container, .Root > :where(div:has(#main-view)))::before {
+  inset: calc(-2 * var(--nd-wall-blur, 0px));
+  background-image: var(--nd-wallpaper,
+    radial-gradient(60% 80% at 16% 22%, rgba(var(--nd-a1-rgb), 0.42), rgba(var(--nd-a1-rgb), 0.17) 45%, transparent 100%),
+    radial-gradient(58% 78% at 86% 80%, rgba(var(--nd-a2-rgb), 0.36), rgba(var(--nd-a2-rgb), 0.15) 45%, transparent 100%),
+    radial-gradient(36% 42% at 58% 36%, rgba(122, 92, 255, 0.2), transparent 100%),
+    linear-gradient(160deg, #020713 0%, #04102a 55%, #031025 100%)) !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  filter: blur(var(--nd-wall-blur, 0px)) saturate(1.22) contrast(1.08) brightness(0.95);
+  transition: opacity 360ms ease;
+  z-index: -2;
+}
+html[data-nd-wall="loading"] :is(.Root__top-container, .Root > :where(div:has(#main-view)))::before {
+  opacity: 0;
+}
+
+:is(.Root__top-container, .Root > :where(div:has(#main-view)))::after {
+  background:
+    linear-gradient(rgba(2, 7, 19, var(--nd-wall-dim, 0)), rgba(2, 7, 19, var(--nd-wall-dim, 0))),
+    linear-gradient(90deg, rgba(2, 7, 19, 0.68) 0%, rgba(2, 7, 19, 0.30) 45%, rgba(2, 7, 19, 0.22) 100%),
+    linear-gradient(180deg, rgba(2, 7, 19, 0.20) 0%, rgba(2, 7, 19, 0.06) 52%, rgba(2, 7, 19, 0.45) 100%);
+  z-index: -1;
+}
+
+
+/* --------------------------------------------------------------------------
+   5. Glass panels (one frame per panel)
+      left: #Desktop_LeftSidebar_Id   main: #main-view
+      right: the sidebar panel around #Desktop_PanelContainer_Id
+      player: aside[data-testid="now-playing-bar"]
+   -------------------------------------------------------------------------- */
+#Desktop_LeftSidebar_Id,
+#main-view,
+.tDwxpCRHu3TEG0d_5KfE > :is(.iZl4hCeW2xyCCK5nSCCL, .Root__right-sidebar-peek),   /* 1.3.4 right sidebar panel */
+aside[data-testid="now-playing-bar"] {
+  background: var(--nd-glass-strong) !important;
+  border: 1px solid var(--nd-border) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#main-view {
+  background: var(--nd-glass) !important;
+}
+
+#Desktop_LeftSidebar_Id,
+#main-view,
+.tDwxpCRHu3TEG0d_5KfE > :is(.iZl4hCeW2xyCCK5nSCCL, .Root__right-sidebar-peek) {
+  isolation: isolate !important;
+}
+#Desktop_LeftSidebar_Id {
+  overflow: hidden !important;
+}
+/* right sidebar after a Spotify update renamed its wrapper (inert while the wrapper exists): the frame goes on
+   the panel container itself */
+.Root:not(:has(.iZl4hCeW2xyCCK5nSCCL, .Root__right-sidebar-peek)) #Desktop_PanelContainer_Id {
+  background: var(--nd-glass-strong) !important;
+  border: 1px solid var(--nd-border) !important;
+  border-radius: 18px !important;
+  isolation: isolate !important;
+}
+
+aside[data-testid="now-playing-bar"] {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  position: relative !important;
+  isolation: isolate !important;
+}
+
+/* Soft-focus glass: a light blur of the wallpaper behind each panel removes
+   the fine detail that hurt text contrast, while the art stays recognisable.
+   It lives on a pseudo-element (not the panel itself) so it does not turn the
+   panel into a containing block for fixed-position popups. Set --nd-blur: 0px
+   for a crisp wallpaper. */
+#Desktop_LeftSidebar_Id::before,
+#main-view::before,
+.tDwxpCRHu3TEG0d_5KfE > :is(.iZl4hCeW2xyCCK5nSCCL, .Root__right-sidebar-peek)::before,
+aside[data-testid="now-playing-bar"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(var(--nd-blur)) saturate(1.15);
+  backdrop-filter: blur(var(--nd-blur)) saturate(1.15);
+}
+
+/* "expanded library" mode: the library panel grows over the main view, which
+   Spotify keeps rendered (and inert) underneath. Spotify's panels are opaque
+   so it never shows; with glass it ghosted through, so hide it meanwhile. */
+html[data-cinema-library-postenter] #main-view {
+  visibility: hidden !important;
+  opacity: 0 !important;   /* the page title sets visibility: visible inline */
+}
+
+/* inner layers that would draw a 2nd frame or an opaque fill */
+#Desktop_LeftSidebar_Id > nav > div,               /* library card */
+#Desktop_LeftSidebar_Id .YourLibraryX,
+:is(.Root__top-container, .Root > :where(div:has(#main-view))) > div:has(> aside[data-testid="now-playing-bar"]),  /* player grid cell (#000) */
+.L5dM7nzQpMJtRkvZZBZL,                              /* 1.3.4 same cell */
+:is(.cW4mdx7MbdsSDVOh4yFl, .main-nowPlayingBar-nowPlayingBar),
+.tDwxpCRHu3TEG0d_5KfE :is(.CiOD8FcUYi5qaFpucMPa, .Root__right-sidebar-overlayWrapper),        /* 1.3.4 right panel inner wrappers */
+.tDwxpCRHu3TEG0d_5KfE :is(.j5s9RY8stckaOEL0yAbt, .Root__right-sidebar-peekContent) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+#Desktop_LeftSidebar_Id > nav > div,
+.tDwxpCRHu3TEG0d_5KfE :is(.CiOD8FcUYi5qaFpucMPa, .Root__right-sidebar-overlayWrapper),
+.tDwxpCRHu3TEG0d_5KfE :is(.j5s9RY8stckaOEL0yAbt, .Root__right-sidebar-peekContent) {
+  border-radius: inherit !important;
+}
+
+/* scroll containers and wrappers that Spotify paints with the base colour */
+.main-view-container,
+.main-view-container__scroll-node,
+.main-view-container__scroll-node-child,
+.main-view-container__mh-footer-container,
+[data-overlayscrollbars-viewport] {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* top bar: dark navy band instead of pure black (keeps the Windows caption
+   buttons area from looking like a black box) */
+:is(.Root__globalNav, [id="global-nav-bar"]) {
+  background: linear-gradient(180deg, rgba(2, 7, 19, 0.92) 0%, rgba(2, 7, 19, 0.62) 100%) !important;
+}
+:is(.Root__globalNav, [id="global-nav-bar"]) input[data-encore-id="formInput"] {
+  box-shadow: inset 0 0 0 1px var(--nd-border-soft) !important;
+}
+:is(.Root__globalNav, [id="global-nav-bar"]) input[data-encore-id="formInput"]:hover {
+  box-shadow: inset 0 0 0 1px var(--nd-border) !important;
+}
+:is(.Root__globalNav, [id="global-nav-bar"]) input[data-encore-id="formInput"]:focus {
+  box-shadow: inset 0 0 0 2px var(--nd-a2-fg), 0 0 14px rgba(var(--nd-a2-rgb), 0.35) !important;
+}
+:is(.Root__globalNav, [id="global-nav-bar"]) :is(.oGrojYscaY3uU8Hy86FD, .main-globalNav-link-icon),
+:is(.Root__globalNav, [id="global-nav-bar"]) [data-testid="user-widget-link"] {
+  box-shadow: inset 0 0 0 1px var(--nd-border-soft) !important;
+}
+
+/* custom scrollbars */
+.os-theme-spotify.os-scrollbar {
+  --os-handle-bg: rgba(var(--nd-line-rgb), 0.26);
+  --os-handle-bg-hover: rgba(var(--nd-line-rgb), 0.45);
+  --os-handle-bg-active: rgba(var(--nd-line-rgb), 0.60);
+}
+
+
+/* --------------------------------------------------------------------------
+   6. Remove Spotify's opaque page layers (1.3.4 hashed classes)
+   -------------------------------------------------------------------------- */
+
+/* Home: 256px colour wash behind the shortcut grid (ended abruptly) */
+:is(._ddPhxHdxmpT13IbjTmr, .main-home-homeHeader) {                 /* 1.3.4 home header background */
+  display: none !important;
+}
+
+/* Home: sticky filter-chips bar (Spotify fades it in on scroll) */
+.mdoyl18mLQqK77IPy1wh {                 /* 1.3.4 chips bar background */
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  background-color: var(--nd-glass-bar) !important;
+  box-shadow: 0 1px 0 var(--nd-border-soft) !important;
+}
+.mdoyl18mLQqK77IPy1wh::after {
+  background: none !important;
+}
+
+/* Page content wrappers painted with var(--background-base) */
+:is(.AJoN_5gn82ApfBFE8LbC, .playlist-playlist-playlistContent),                  /* 1.3.4 playlist / album / Liked Songs content */
+.aqPz_GpMetVOMtCnHtYB,                  /* 1.3.4 playlist section */
+.rTHahewpyEmhd4usx52E,                  /* 1.3.4 artist page content */
+.JpSQVHjL43tApu3BBboT,                  /* 1.3.4 artist content (variant) */
+.bP_s9AAlJVbM9CnSKRER,                  /* 1.3.4 artist tour dates */
+.GD_sCWOL__rZjEUkNTYA,                  /* 1.3.4 artist discography row */
+.KHG4Ui7VCQsOq7EQCtdY,                  /* 1.3.4 browse / genre page */
+.FldYw0YRGsmFOFeoYU2e,                  /* 1.3.4 cultural-moment hub */
+.CFQb76PJZilvJ8fZfIml,                  /* 1.3.4 concert page */
+.O_QpYvcQN_DNjJ3fOCHP,                  /* 1.3.4 prompted playlist track list */
+.u5lWmvdVqfwffV1OKIcZ,                  /* 1.3.4 episode page */
+:is(.w51TvrCVvEd85FHciVVi, .playlist-playlist-concertsFooter) {                 /* 1.3.4 concerts footer */
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Entity header (playlist / album / show): cover-colour gradient -> neon tint */
+:is(.V7ICuEr1ZBtemPGKXeZb, .main-entityHeader-backgroundColor),                  /* 1.3.4 header gradient */
+.QqprhKqwqIsC3c9SIKOE {                 /* 1.3.4 Liked Songs header (purple) */
+  background-color: transparent !important;
+  background-image: var(--nd-tint) !important;
+}
+:is(.V7ICuEr1ZBtemPGKXeZb, .main-entityHeader-backgroundColor)::after {          /* 1.3.4 radial #121212 vignette */
+  background: none !important;
+}
+.QqprhKqwqIsC3c9SIKOE.huL1DwMxKXMSuoZ02LmZ {   /* 1.3.4 Liked Songs darkening layer */
+  background: none !important;
+}
+
+/* bands under the header that fade the cover colour into var(--background-base) */
+:is(.oCSWtOAH_CgjIsi_H_PS, .main-actionBarBackground-background),                  /* 1.3.4 action-bar band (173px) */
+.sxMpFt17cJVTesE9u6fX {                 /* 1.3.4 232px band (Liked Songs, album...) */
+  display: none !important;
+}
+
+/* artist page: tinted veil over the hero while scrolling */
+[data-testid="overscroll-background"] {
+  background-color: transparent !important;
+}
+.xWAGb7rkhYb1eQ8LiDaB::after {          /* 1.3.4 hero scroll-darkening layer */
+  background-color: transparent !important;
+}
+/* full-bleed headers (artist hero, song radio): fade the picture into the
+   glass instead of a hard edge. The picture is zoomed 1.1x inside a clipping
+   box, so the fade must be complete by ~90% of its own height. */
+.TmjKsp7ZdmzlG9vtR_94 {                 /* 1.3.4 hero image + overlay layers */
+  -webkit-mask-image: linear-gradient(180deg, #000 45%, transparent 90%);
+  mask-image: linear-gradient(180deg, #000 45%, transparent 90%);
+}
+
+/* page top bar (title + play button that appear on scroll). Spotify fades
+   it in with an inline opacity (0 at the top of the page) and paints it with
+   the cover colour; make it the same navy glass as the other sticky bars. */
+:is(.Ac2raqVCOQ_HYbbCkBAP, .main-topBar-background) {                 /* 1.3.4 top bar background */
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  background-color: var(--nd-glass-bar) !important;
+  background-image: linear-gradient(90deg, rgba(var(--nd-a1-rgb), 0.10), rgba(var(--nd-a2-rgb), 0.06)) !important;
+  box-shadow: inset 0 -1px 0 var(--nd-border-soft) !important;
+}
+:is(.Ac2raqVCOQ_HYbbCkBAP, .main-topBar-background) > :is(.oCEpJz9qQElJmB4tFybO, .main-topBar-overlay),    /* 1.3.4 #0009 overlay (static colours) */
+:is(.Ac2raqVCOQ_HYbbCkBAP, .main-topBar-background)::after {                    /* 1.3.4 "mixing" #121212 vignette */
+  background: none !important;
+}
+
+/* sticky "# Titulo Album" header while scrolling */
+:is(.rl0QlbVbrvgO0fB5Pkua, .main-trackList-trackListHeader):is(.wS4RXx56HUXHPjf7agj1, .main-trackList-trackListHeaderStuck) {      /* 1.3.4 stuck track-list header */
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  background: var(--nd-glass-bar) !important;
+  border-bottom: 1px solid var(--nd-border-soft) !important;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35) !important;
+}
+.nQQ7peaVTL25ZYuUiZO7.IdgIIuXJFUxPHHA7405z {      /* 1.3.4 stuck filter/sort bar */
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  background-color: var(--nd-glass-bar) !important;
+}
+
+/* right panel header (queue, devices...) once its list is scrolled, and the
+   column header of the expanded library (transparent until it sticks) */
+.QpngrC2Hl1z4GwMLflLx {                 /* 1.3.4 expanded-library column header */
+  background-color: transparent !important;
+}
+.E_1gyB1Q4Jd6iDL0gDvd .AujFfANzEtr7FofkMmMw,      /* 1.3.4 */
+.QpngrC2Hl1z4GwMLflLx.EA3kC7To7_UIJZc4cq58 {      /* 1.3.4 stuck */
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  background-color: var(--nd-glass-bar) !important;
+}
+
+/* search results: sticky filter-chip row. Spotify paints it with the base
+   colour at all times (it is always sticky), which made a dark navy band
+   across the top of the glass. Keep it clear at the top of the page and fade
+   the frosted bar in over the first 56px of scrolling (scroll-driven
+   animation on the main view scroller; no !important on background, or it
+   would beat the animation). */
+@keyframes nd-stuck-bar {
+  from {
+    background-color: rgba(3, 12, 28, 0);
+    box-shadow: 0 1px 0 rgba(var(--nd-line-rgb), 0), 0 8px 16px rgba(0, 0, 0, 0);
+    -webkit-backdrop-filter: blur(0px) saturate(1);
+    backdrop-filter: blur(0px) saturate(1);
+  }
+  to {
+    background-color: rgba(3, 12, 28, 0.95);
+    box-shadow: 0 1px 0 rgba(var(--nd-line-rgb), 0.16), 0 8px 16px rgba(0, 0, 0, 0.30);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    backdrop-filter: blur(16px) saturate(1.2);
+  }
+}
+.ht_axJTxxrH1CVE1_yJs {                 /* 1.3.4 search chip row */
+  background: transparent;
+  animation: nd-stuck-bar linear both;
+  animation-timeline: scroll(nearest block);
+  animation-range: 0px 56px;
+}
+
+/* grid card artwork wrappers: the --card-color fallback (section 1) makes
+   folder tiles / loading cards navy; a soft ring matches the list tiles
+   (the cover image, when there is one, covers the inset ring) */
+.mdY9Xw839F5sY1aa68Fi,                  /* 1.3.4 card image wrapper */
+.oIJ4lkrXjESSy58uSSgn {                 /* 1.3.4 browse / search card image wrapper */
+  box-shadow: inset 0 0 0 1px var(--nd-border-soft), 0 8px 24px rgba(0, 0, 0, 0.50);
+}
+
+/* image placeholders (folders, missing covers) */
+.CsIODnJlyHq3A_6cirYQ,                  /* 1.3.4 library list placeholder */
+.yMB7c55NzLPShLb_8JWX {                 /* 1.3.4 playlist page placeholder (gone in 1.3.4.258; kept for older builds) */
+  background-color: #0e2140 !important;
+  color: var(--nd-subtext) !important;
+  box-shadow: inset 0 0 0 1px var(--nd-border-soft);
+}
+
+
+/* --------------------------------------------------------------------------
+   7. Right sidebar (Now Playing view, queue, friend activity)
+   -------------------------------------------------------------------------- */
+#Desktop_PanelContainer_Id,
+#Desktop_PanelContainer_Id::before,
+[data-npv-root] {
+  background-color: transparent !important;
+  outline: 0 !important;
+}
+[data-npv-root] {
+  --section-background-base: rgba(8, 28, 56, 0.55) !important;
+  border-radius: inherit !important;
+}
+#Desktop_PanelContainer_Id .dDboNBnAQngC9O6GkSzI,   /* 1.3.4 NPV section cards */
+#Desktop_PanelContainer_Id ._5r5Z5L6ZrkTUa8r_fxps {
+  box-shadow: inset 0 0 0 1px var(--nd-border-soft) !important;
+}
+
+/* NPV sticky header: Spotify animates it to var(--background-base) */
+[data-npv-root] .Zh3rQRncNEHrT9Zvp61n {          /* 1.3.4 NPV header */
+  --background-base: var(--nd-glass-bar);
+}
+
+/* NPV header buttons ("Mais", "Expandir") are hover-only and also collapsed
+   to 0px width in Spotify; show them always, in the same ice-blue as the
+   close (X) button of the other right-panel headers */
+[data-npv-root] .p6kF1IxG_pJmIvtxilUl {           /* 1.3.4 right button group */
+  inline-size: max-content !important;
+  overflow: visible !important;
+}
+[data-npv-root] .p6kF1IxG_pJmIvtxilUl > .oTkv2KsDMK3Jjr3wUVQ1 {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+[data-npv-root] .p6kF1IxG_pJmIvtxilUl button {
+  color: var(--nd-subtext) !important;
+}
+[data-npv-root] .p6kF1IxG_pJmIvtxilUl button:is(:hover, :focus-visible) {
+  color: var(--nd-text) !important;
+}
+
+/* Now Playing canvas/video veils (were neutral grey oklch(18% 0 0)) */
+.g5jITva_uv36xKOOeyUg {                 /* 1.3.4 top veil */
+  background: linear-gradient(rgba(2, 7, 19, 0.82) 0%, rgba(2, 7, 19, 0) 30%) !important;
+}
+.FrOCYxD1jfORa1YkaVAF {                 /* 1.3.4 bottom scrim */
+  background: linear-gradient(to bottom, transparent 0% var(--npv-canvas-bottom-scrim-clear-end, 55%), rgba(2, 7, 19, 0.78) var(--npv-canvas-bottom-scrim-mid-stop, 72%), rgba(2, 7, 19, 0.92) var(--npv-canvas-bottom-scrim-solid-stop, 90%)) !important;
+}
+.RFBseyYsVLuqkSPyguDH {                 /* 1.3.4 full veil (hides on hover) */
+  background: linear-gradient(rgba(2, 7, 19, 0.55) 0%, rgba(2, 7, 19, 0.40) 30% 70%, rgba(2, 7, 19, 0.85) 95%) !important;
+}
+
+/* promo card with a green radial glow */
+.gfQK4A3wAjLfkSDCa6OA {                 /* 1.3.4 */
+  background: radial-gradient(82.95% 283.44% at 50% -160.29%, rgba(var(--nd-a2-rgb), 0.30) 0%, var(--gradient-color-bottom) 100%) !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   8. Now playing bar
+   -------------------------------------------------------------------------- */
+.main-nowPlayingWidget-trackInfo a,
+.main-nowPlayingWidget-trackInfo [data-encore-id="text"],
+[data-testid="now-playing-widget"] a {
+  text-shadow: 0 0 9px rgba(var(--nd-a2-rgb), 0.30), 0 1px 2px rgba(0, 0, 0, 0.65);
+}
+
+/* connect-device strip ("Tocando em ...") at the bottom of the player */
+aside[data-testid="now-playing-bar"] > .encore-bright-accent-set {
+  background: linear-gradient(90deg, rgba(var(--nd-a1-rgb), 0.92), rgba(var(--nd-a2-rgb), 0.92)) !important;
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.10) inset !important;
+}
+
+/* play / pause: bright ice-white disc with a cyan glow */
+[data-testid="control-button-playpause"] > [class*="button-primary__inner"] {
+  box-shadow: 0 0 16px rgba(var(--nd-a2-rgb), 0.35) !important;
+}
+
+/* lyrics / queue / devices / miniplayer / fullscreen: same ice-blue as the
+   shuffle / repeat / volume icons (Spotify hard-codes grey #ffffffb3) */
+:is(.kqGrI_ODO1c0FGcH5yeB, .main-genericButton-button) {
+  color: var(--nd-subtext) !important;
+}
+:is(.kqGrI_ODO1c0FGcH5yeB, .main-genericButton-button):is(:hover, :focus-visible) {
+  color: var(--nd-text) !important;
+}
+
+/* active queue / lyrics / connect / miniplayer buttons (was #1db954 + dot) */
+:is(.kqGrI_ODO1c0FGcH5yeB, .main-genericButton-button):is(.Cmx9uwGYgu1ZtlUHQhCH, .main-genericButton-buttonActive),
+:is(.kqGrI_ODO1c0FGcH5yeB, .main-genericButton-button):is(.Cmx9uwGYgu1ZtlUHQhCH, .main-genericButton-buttonActive):is(:hover, :focus, :active),
+.UCEjvtn32knNrDy79Sqg button > svg {    /* 1.3.4 miniplayer open */
+  color: var(--nd-a2-fg) !important;
+  filter: drop-shadow(0 0 5px rgba(var(--nd-a2-rgb), 0.45));
+}
+:is(.kqGrI_ODO1c0FGcH5yeB, .main-genericButton-button):is(.c1Xr167nJtlrItp_mX8b, .main-genericButton-buttonActiveDot)::after {
+  background-color: var(--nd-a2-fg) !important;
+}
+
+/* progress + volume bars */
+:is(.Nd6cUzZDlHX30QzhnExg, .progress-bar) {
+  --fg-color: var(--nd-text) !important;
+  --is-active-fg-color: var(--nd-a2-fg) !important;
+  --bg-color: rgba(var(--nd-subtext-rgb), 0.26) !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   9. Buttons
+   -------------------------------------------------------------------------- */
+
+/* 9a. Primary (play) buttons. Encore paints the INNER span; Spotify's own
+       hover-reveal / disabled fades act on that span, so only it is styled. */
+[data-encore-id="buttonPrimary"] > [class*="button-primary__inner"].encore-bright-accent-set {
+  background-image: var(--nd-grad) !important;
+  color: var(--nd-on-accent);
+  box-shadow: var(--nd-glow);
+}
+[data-encore-id="buttonPrimary"]:hover > [class*="button-primary__inner"].encore-bright-accent-set,
+[data-encore-id="buttonPrimary"]:focus-visible > [class*="button-primary__inner"].encore-bright-accent-set {
+  background-image: var(--nd-grad-hi) !important;
+  box-shadow: 0 0 18px rgba(var(--nd-a1-rgb), 0.55), 0 0 30px rgba(var(--nd-a2-rgb), 0.30);
+}
+[data-encore-id="buttonPrimary"]:active > [class*="button-primary__inner"].encore-bright-accent-set {
+  background-image: var(--nd-grad-press) !important;
+}
+[data-encore-id="buttonPrimary"]:disabled > [class*="button-primary__inner"],
+[data-encore-id="buttonPrimary"][aria-disabled="true"] > [class*="button-primary__inner"] {
+  box-shadow: none;
+}
+
+/* 9b. Filter chips */
+[data-encore-id="chip"] > [class*="chip__inner--selected"] {
+  background-image: var(--nd-grad) !important;
+  color: var(--nd-on-accent) !important;
+  box-shadow: 0 0 10px rgba(var(--nd-a1-rgb), 0.28) !important;
+}
+[data-encore-id="chip"] > [class*="chip__inner"]:not([class*="--selected"]) {
+  background-color: rgba(8, 28, 56, 0.62) !important;
+  box-shadow: inset 0 0 0 1px var(--nd-border-soft) !important;
+  color: var(--nd-text) !important;
+}
+[data-encore-id="chip"]:hover > [class*="chip__inner"]:not([class*="--selected"]) {
+  background-color: rgba(16, 48, 88, 0.82) !important;
+  box-shadow: inset 0 0 0 1px var(--nd-border) !important;
+}
+
+/* 9c. Settings / panel toggles (were #1db954 with a white knob).
+       1.3.4: track .UD4xyfw1t2473YaX2GGP, knob .mQCNH1EgZXIvKeJzLs5t;
+       .x-toggle-* is the readable name Spicetify maps on older builds. */
+:is(.UD4xyfw1t2473YaX2GGP, .x-toggle-indicatorWrapper) {
+  background-color: #3b5180 !important;
+}
+input:hover:not([disabled], :active) ~ :is(.UD4xyfw1t2473YaX2GGP, .x-toggle-indicatorWrapper) {
+  background-color: #56709f !important;
+}
+input:checked ~ :is(.UD4xyfw1t2473YaX2GGP, .x-toggle-indicatorWrapper) {
+  background: var(--nd-grad) !important;
+  box-shadow: 0 0 10px rgba(var(--nd-a2-rgb), 0.40) !important;
+}
+input:checked:hover:not([disabled], :active) ~ :is(.UD4xyfw1t2473YaX2GGP, .x-toggle-indicatorWrapper) {
+  background: var(--nd-grad-hi) !important;
+}
+:is(.UD4xyfw1t2473YaX2GGP, .x-toggle-indicatorWrapper) > :is(.mQCNH1EgZXIvKeJzLs5t, .x-toggle-indicator) {
+  background-color: var(--nd-text) !important;
+}
+input:checked ~ :is(.UD4xyfw1t2473YaX2GGP, .x-toggle-indicatorWrapper) > :is(.mQCNH1EgZXIvKeJzLs5t, .x-toggle-indicator) {
+  background-color: var(--nd-on-accent) !important;
+}
+
+/* 9d. Disabled back/forward in the top bar (same level as other disabled
+       controls, see --encore-opacity-disabled) */
+:is(.mwS6iejUY71X0jWR5Ee1, .main-globalNav-historyButtons) button:disabled {
+  opacity: 0.55 !important;
+}
+
+/* 9e. Carousel arrows (chip rows, shelves). Spotify draws a white disc in its
+       light theme, which this theme maps to navy, so the disc vanished on the
+       navy chips. Give them a bright ice disc with a dark arrow. */
+[data-testid="carousel-next-button"],
+[data-testid="carousel-previous-button"],
+.OxcpGT2yLq52q4F4aiCr {                 /* 1.3.4 carousel chevron button */
+  background-color: rgba(var(--nd-text-rgb), 0.94) !important;
+  color: #031025 !important;
+  box-shadow: 0 0 0 1px rgba(var(--nd-a2-rgb), 0.55), 0 0 12px rgba(var(--nd-a2-rgb), 0.35), 0 4px 10px rgba(0, 0, 0, 0.45) !important;
+}
+[data-testid="carousel-next-button"]:hover,
+[data-testid="carousel-previous-button"]:hover,
+.OxcpGT2yLq52q4F4aiCr:hover {
+  background-color: #ffffff !important;
+}
+:is([data-testid="carousel-next-button"], [data-testid="carousel-previous-button"], .OxcpGT2yLq52q4F4aiCr) > * {
+  opacity: 1 !important;
+  color: #031025 !important;
+  fill: #031025 !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   10. Accents that Spotify hard-codes green (1.3.4 names)
+   -------------------------------------------------------------------------- */
+[role="menuitemradio"][aria-checked="true"],
+[role="menuitemcheckbox"][aria-checked="true"],
+:is(.i_0adG56SoGkx5SvB82Z, .main-contextMenu-menuItemButton)[role="menuitemradio"][aria-checked="true"],  /* 1.3.4 menu item */
+.OdQM5xtuqgs1A4Mm4Hm5,                  /* 1.3.4 playing-row link */
+.L823BHEOt6gXR6d5GcYb,                  /* 1.3.4 finished-chapter check */
+:is(.JXyx3kgGd8o28YyVwS9T, .main-yourEpisodes-coverIcon),                  /* 1.3.4 "your episodes" cover icon */
+.Bt9R5P1Lc5WEvwXx5E8s,                  /* 1.3.4 */
+.koZnRMLteXTV9FHECBaz[data-selected="true"],   /* 1.3.4 settings zoom picker */
+.mXlJk4_T6MUs4nV6uXXQ.gWctZym9uXUqPsGWJrD8 .RX2_UlV_tDuv_qEVRZZG,   /* 1.3.4 played episode */
+.YYKvMLJlGl6J26m5Pexg.mL2EKVOetxplg5myY9v2 .AlP3Kfj3qH3Pakls0Xb9,
+.NqetUUL5aTjVzbuMKKrE .tkikYBMcktMwYl7scFhN,
+.FO6sf2YxHYpbpCCBHqYr.NY4Wu5iWUynIG73JaMSw,   /* 1.3.4 miniplayer */
+.gr3vlYJchw62OV8x_vSN[aria-checked="true"],
+.pK4xqQ4YMak7qWuwxxte,
+.G0xHOwZ8IwAFPYHOH_Be,
+.WiFZy43XJexqjUiGayX5:hover,
+.pahEMT2qq2F0R39cLWSe,                  /* 1.3.4 active button with a dot */
+.pahEMT2qq2F0R39cLWSe:focus-visible {
+  color: var(--nd-a2-fg) !important;
+  border-color: var(--nd-a2-fg) !important;
+}
+.F55FY6bzM2zvfCw_NU3l,
+.efyWENoO27UHSjZBmpXg,
+.gr3vlYJchw62OV8x_vSN[aria-checked="true"] {
+  --text-bright-accent: var(--nd-a2-fg) !important;
+}
+.pahEMT2qq2F0R39cLWSe::after,
+.DumVOPb389TfDhPFYxpU .lTi7B01ltt3yfF1ZUEu4 {   /* 1.3.4 slider fill */
+  background-color: var(--nd-a2-fg) !important;
+}
+.W4tyuICJEd_A7fVHnSW8 {                 /* 1.3.4 download progress ring */
+  stroke: var(--nd-a2-fg) !important;
+}
+.VCy89QzACqaFaykoSrkl,                  /* 1.3.4 tab underline */
+._LjO0vU_nES2QSPWAEAJ {
+  border-bottom-color: var(--nd-a2-fg) !important;
+}
+.LoQvZk8w2cFvxDWMSOeC:focus-visible {
+  outline-color: var(--nd-a2-fg) !important;
+}
+.Nv04LEC5GMu3msfbzG0z .YpdY7kNb9yN0u1oBIUo5:hover {
+  background: rgba(var(--nd-a2-rgb), 0.10) !important;
+}
+.Nv04LEC5GMu3msfbzG0z .YpdY7kNb9yN0u1oBIUo5:active {
+  background: rgba(var(--nd-a2-rgb), 0.16) !important;
+}
+/* the other zoom pictograms are #535353 (about 2:1 on the glass) */
+.koZnRMLteXTV9FHECBaz:not([data-selected="true"]) {
+  color: var(--nd-muted) !important;
+}
+.koZnRMLteXTV9FHECBaz:not([data-selected="true"]):hover,
+.koZnRMLteXTV9FHECBaz:not([data-selected="true"]) :hover {
+  color: var(--nd-subtext) !important;
+}
+html[class*="-dark-theme"] [class*="verified-badge"] {
+  --encore-verified-badge-background: var(--nd-a2-fg);
+}
+
+/* green call-to-action pills, chips and the feedback bar */
+.QvgFOaS_vannGscIY4ak,                  /* 1.3.4 empty-state / upsell pill */
+.ehimRFOBlOBHPYBRDDCi,
+._fA4q2hl7XY7z6Sh5pRv,
+.EVGL1vAZIvnqZ0jcbpY3[aria-checked="true"],    /* 1.3.4 concert "interested" */
+.EVGL1vAZIvnqZ0jcbpY3.mJpnYaVrC34nzm5_wf5Q,
+.oA7_7f84dN9JJvsBlOGu:active,
+.lhI0VMoOZU9ky5CPkgFY {                 /* 1.3.4 feedback bar */
+  background: var(--nd-grad) !important;
+  color: var(--nd-on-accent) !important;
+}
+.QvgFOaS_vannGscIY4ak:hover,
+.ehimRFOBlOBHPYBRDDCi:hover,
+._fA4q2hl7XY7z6Sh5pRv:hover {
+  background: var(--nd-grad-hi) !important;
+}
+
+/* glow ring Spotify draws around the big play button while playing (SVG
+   with baked-in green strokes) */
+.QN0omHBMFq07x3MMBf5c {                 /* 1.3.4 play-button glow ring */
+  filter: hue-rotate(calc(var(--nd-green-rotate) + 2deg)) saturate(calc(var(--nd-green-sat) - 0.05)) brightness(calc(var(--nd-green-bright) - 0.1));
+}
+
+/* "now playing" equaliser images in track rows */
+img[src*="equaliser-animated-green"],
+img[src*="equaliser-green"] {
+  filter: hue-rotate(var(--nd-green-rotate)) saturate(var(--nd-green-sat)) brightness(var(--nd-green-bright)) !important;
+}
+
+.nav-link.nav-link.nav-link:focus,
+.nav-link.nav-link.nav-link:hover,
+.bottom-link.bottom-link.bottom-link:hover,
+.footer--full .bottom-link--small.bottom-link--small.bottom-link--small:hover,
+.footer--full .bottom-button.bottom-button.bottom-button:hover,
+.footer--full .bottom-button.bottom-button.bottom-button span:hover {
+  color: var(--nd-a2-fg) !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   11. Track lists
+   -------------------------------------------------------------------------- */
+:is(.bznG9_8RunWlZrurmZ_z, .main-trackList-trackListRow):is(:hover, :focus-within) {        /* 1.3.4 track row */
+  background-color: rgba(var(--nd-a2-rgb), 0.10) !important;
+  box-shadow: inset 0 0 0 1px rgba(var(--nd-a2-rgb), 0.20) !important;
+}
+:is(.bznG9_8RunWlZrurmZ_z, .main-trackList-trackListRow):is(.hcHaR7GabGuLXVBm592v, .main-trackList-selected),             /* 1.3.4 selected row */
+:is(.bznG9_8RunWlZrurmZ_z, .main-trackList-trackListRow):is(.hcHaR7GabGuLXVBm592v, .main-trackList-selected):hover,
+[role="row"][aria-selected="true"] > :is(.bznG9_8RunWlZrurmZ_z, .main-trackList-trackListRow) {
+  background-color: rgba(var(--nd-a1-rgb), 0.20) !important;
+  box-shadow: inset 0 0 0 1px rgba(var(--nd-a1-rgb), 0.45) !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   12. Cards and boxes
+   -------------------------------------------------------------------------- */
+
+/* Home shortcut tiles (2-column grid) */
+:is(.Ut_wBpPPXvZ0dLV07qaf, .view-homeShortcutsGrid-shortcut) {                 /* 1.3.4 shortcut tile */
+  background-color: rgba(6, 20, 44, 0.62) !important;
+  box-shadow: inset 0 0 0 1px var(--nd-border-soft) !important;
+}
+:is(.Ut_wBpPPXvZ0dLV07qaf, .view-homeShortcutsGrid-shortcut):hover,
+:is(.Ut_wBpPPXvZ0dLV07qaf, .view-homeShortcutsGrid-shortcut):focus-within,
+:is(.Ut_wBpPPXvZ0dLV07qaf, .view-homeShortcutsGrid-shortcut)[data-context-menu-open="true"] {
+  background: rgba(14, 42, 80, 0.82) !important;
+  box-shadow: inset 0 0 0 1px var(--nd-border), 0 0 16px rgba(var(--nd-a2-rgb), 0.16) !important;
+}
+
+/* interactive boxes (e.g. "Novo lancamento" / "Escolhido para voce" cards):
+   only add a cyan ring on hover. Spotify's own hover fill (navy tokens or the
+   card's custom colour) is kept; contrasting and disabled boxes are skipped. */
+#main-view [data-encore-id="box"][class*="box--interactive"]:not([class*="box--contrasting"], [aria-disabled="true"], [disabled]):hover::after {
+  box-shadow: inset 0 0 0 1px var(--nd-border) !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   13. Menus, popovers, dialogs
+   -------------------------------------------------------------------------- */
+
+/* context menus (were #282828) */
+#context-menu ul[role="menu"],
+:is(.OaSY214vYDR7KmEecpT1, .main-contextMenu-menu),                  /* 1.3.4 menu list */
+.CVxTfo6NqZXuAMThbe10 {                 /* 1.3.4 small popover menu */
+  background-color: var(--nd-surface) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 0 1px var(--nd-border), 0 22px 58px rgba(0, 0, 0, 0.55) !important;
+}
+[role="menu"] li > :is(button, a):not([aria-disabled="true"]):hover,
+[role="menu"] li > :is(button, a):not([aria-disabled="true"]):focus-visible,
+[role="menu"] li > :is(button, a)[aria-expanded="true"],
+:is(.i_0adG56SoGkx5SvB82Z, .main-contextMenu-menuItemButton):not(:is(.JGC1d4N3tRQVhxsujuav, .main-contextMenu-disabled)):hover {  /* 1.3.4 item / disabled */
+  background-color: rgba(var(--nd-a2-rgb), 0.14) !important;
+  color: #ffffff !important;
+}
+
+/* top-bar search suggestions dropdown */
+:is(.Root__globalNav, [id="global-nav-bar"]) [role="listbox"] {
+  box-shadow: 0 0 0 1px var(--nd-border), 0 18px 42px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* tooltips. Spotify sets --generic-tooltip-background-color (#282828) on the
+   tooltip element itself, so the :root value never reaches it; set it on the
+   same element (the popper arrow reads the same variable). */
+.x3vy0kZ_emzP4A8eunI5,                  /* 1.3.4 generic tooltip */
+.lQrghdWPsTorqTh6ko0x {                 /* 1.3.4 progress-bar time tooltip */
+  --generic-tooltip-background-color: var(--nd-surface);
+  color: var(--nd-text);
+  box-shadow: 0 0 0 1px var(--nd-border), 0 8px 18px rgba(0, 0, 0, 0.45);
+}
+
+/* onboarding callouts (#4687d6) and "Novidade" announcement popovers; the
+   red error callout (.vEBmxJa0WemQ0WoX04OY) keeps its colour */
+.LbzOFdtjah8Ff95VKgLs:not(.vEBmxJa0WemQ0WoX04OY) {   /* 1.3.4 callout */
+  --generic-tooltip-background-color: var(--nd-surface-hi);
+  color: var(--nd-text);
+}
+.LbzOFdtjah8Ff95VKgLs,
+.NCvajRYZXI0QnQh4i_Ti {                 /* 1.3.4 announcement popover */
+  box-shadow: 0 0 0 1px var(--nd-border), 0 0 16px rgba(var(--nd-a2-rgb), 0.20), 0 12px 28px rgba(0, 0, 0, 0.50);
+}
+
+/* "announcement" snackbar (was #4a8dff with navy text); the plain snackbar
+   is a legacy-overlay and gets the dialog ring below */
+.YVRgHhfL9WmezkwFDfnU {                 /* 1.3.4 */
+  background-color: var(--nd-surface-hi);
+  color: var(--nd-text);
+}
+
+/* dialog panels */
+:is(.e-10860-legacy-overlay, [class*="-legacy-overlay "], [class$="-legacy-overlay"]),
+:is(.e-10860-legacy-popover, [class*="-legacy-popover "], [class$="-legacy-popover"]),
+generic-modal .GenericModal,
+.EKhR4AWogRjX6LiPzVc7,                  /* 1.3.4 confirm dialog */
+.Jo5wXbOzSNYbIdGHxCrd,                  /* 1.3.4 restricted-device dialog */
+.h2xSNUPmvdT_QBOX2Rbw,                  /* 1.3.4 lossless confirm */
+.gTYd9GSAsWVjfay4zq69 {
+  box-shadow: 0 0 0 1px var(--nd-border), 0 22px 58px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* dialogs / popovers that hard-code black text or a white/light-grey surface
+   (they would show ice text on white, or black text on navy) */
+.Jo5wXbOzSNYbIdGHxCrd,                  /* 1.3.4 restricted-device dialog: color #000 */
+.EvmeKyemPmmbdjRZQezw,                  /* 1.3.4 error dialog (#fff) */
+.FnUUCAJ79nf4_lZGH0DB,                  /* 1.3.4 reload/error dialog (#fff) */
+.uyz5Wgiw70fR7PWDrMA1,                  /* 1.3.4 white info cards */
+.xlSX2ez64Rjufc_UUKfP,
+.zr8AsNa8BVNb42zwdRWJ {                 /* 1.3.4 Connect intro popover (#f5f5f5) */
+  background-color: var(--nd-surface) !important;
+  color: var(--nd-text) !important;
+  border: 1px solid var(--nd-border) !important;
+}
+
+/* Spicetify PopupModal (Marketplace settings, extension settings...) */
+.GenericModal {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+.GenericModal .spicetify-popup-container,
+.GenericModal .main-embedWidgetGenerator-container {
+  background-color: var(--nd-surface) !important;
+  color: var(--nd-text) !important;
+}
+
+/* 1.3.4 dialogs that hard-code neutral grey/black surfaces (all hashed
+   classes from here to the end of section 13 are 1.3.4 names) */
+.fkHSEm8Ty99jxZVXju1k,                  /* playlist "Editar detalhes" (#282828) */
+.E_o7gDgexuIfXOPBjoS9,                  /* "Ver creditos" (#121212) */
+.vMn1qcBEDTAE6bSL_kzy,                  /* artist "Sobre" gallery modal (#121212) */
+.pCbuECJExeRVi2OpP7dt,                  /* "Incorporar" embed dialog (#181818) */
+.D9VLLDaGIHsdwBWOhSGg,                  /* podcast rating (#282828) */
+.apaV6nn5nKzB3Nj1CzsA,                  /* about recommendations (#000) */
+.jnrWk1nCBOEUqS_eCccW,                  /* playlist permissions / collaborators (#282828) */
+.VKV9ocGl5fpJYLxCo_Eu,                  /* Jam / group session (#181818) */
+.FWRsAr8oHcFEkQHOl2AX .Nr3yAEyw8xr9WQpnUzQf,   /* full-size dialog (#282828) */
+.NtWOkt024WYaueIUALuA,                  /* "Sobre o Spotify" (#181818) */
+.J3AtAGuT6X4todj9_fB3,                  /* licences (#181818) */
+.XokIsLUKMjRuJSLJmTwY {                 /* report a problem (#181818) */
+  background-color: var(--nd-surface) !important;
+  color: var(--nd-text) !important;
+  box-shadow: 0 0 0 1px var(--nd-border), 0 22px 58px rgba(0, 0, 0, 0.55) !important;
+}
+.jz3kFh9zjkNq2Ss_iR0W,                  /* embed: code drawer under the dialog (#121212) */
+.UeEYEVbGTd5jFcOEd0hT,                  /* embed: preview loading layer (#181818) */
+.KaQJUDIRayurt4XVdJUv,                  /* "Sobre o Spotify" copyright box (#282828) */
+.Y2Q5O2rb8KvEX2WzujU9 > div {           /* embed help bubble (#282828) */
+  background-color: #08152c !important;
+  color: var(--nd-text);
+}
+/* quick search modal: #181818 strips */
+.AerL3wLFVWgbHVvg1Z4g,
+.dBwuEM1x_SsfLBiifnmm,
+.di0eiEeEn9yefeze8yVA,
+.QeuDqsUfBcTAdQFil8h4,
+.AireS9pQY9Mc1nEF0Tj5 {
+  background-color: var(--nd-surface) !important;
+}
+/* dividers (#ffffff1a / #333) */
+.n9IjS_C0N7ARFJXA4WOS,                  /* track credits header */
+.vYQ4fXfHSoU5Q4Rysmz8 {                 /* dialog header */
+  border-bottom-color: var(--nd-border-soft) !important;
+}
+.hBiK19g91Oh460KnM9r8 {                 /* vertical divider */
+  background-color: var(--nd-border-soft) !important;
+}
+/* text inputs in dialogs (#ffffff1a; #333 with a #535353 border on focus) */
+.BKeIibY5VYCNFEP5dg0u,                  /* edit details: name */
+.vRJyKwXQjBQkxdZ9PVQV,                  /* edit details: description */
+.NT1x1_tczYD5yeBs7zyn,
+.jz3kFh9zjkNq2Ss_iR0W .iC7OlbO5xQpQBy2XiiLw {   /* embed code */
+  background: rgba(var(--nd-line-rgb), 0.08) !important;
+  border-color: var(--nd-border-soft) !important;
+  color: var(--nd-text) !important;
+}
+:is(.BKeIibY5VYCNFEP5dg0u, .vRJyKwXQjBQkxdZ9PVQV, .NT1x1_tczYD5yeBs7zyn,
+    .T17nZjuPoqlNqYcHdBGV, .vzF1carzEfcbQkOW8YgG, .ThUGGr85_AM_MZDx2DOq):focus {
+  background-color: #0e2140 !important;
+  border-color: var(--nd-a2-fg) !important;
+  box-shadow: 0 0 10px rgba(var(--nd-a2-rgb), 0.25) !important;
+  outline: none !important;
+}
+/* floating input label: the #282828 strip that hides the input border */
+.bCN24YFEQYPeCaEkfUOl::before {
+  background: var(--nd-surface) !important;
+}
+/* cover / image placeholders inside dialogs (#282828) */
+.rtKEKLjaGSIUoNrz6qpz,
+.bGm9lv8tRGxIjuakp7Fi,
+.jYGg1jRHWMANQFpBrFJm,                  /* edit details: cover button */
+:is(.qE5dJbZtaqoUEdXhiobY, .main-entityHeader-imagePlaceholder) {
+  background: #0e2140 !important;
+  box-shadow: inset 0 0 0 1px var(--nd-border-soft) !important;
+}
+.sbURZ1iBce5t8pt4P_N_ {                 /* small pill (#333) */
+  background-color: var(--nd-surface-hi) !important;
+}
+/* artist "Sobre" modal: picture gallery backdrop (#000), its round arrow /
+   close buttons (#000000b3, #121212 on hover) and the "Verificado pelo
+   Spotify" box (#282828, also shown on the artist page) */
+.LJTf0UTW5rOKgPkjRpsl {
+  background-color: #020713 !important;
+}
+.VGRCBZ5Vm52rbwpsF6sC,
+.J3jNwSyBfH1VtgTwHcLA {
+  background-color: rgba(2, 7, 19, 0.72);
+  box-shadow: 0 0 0 1px var(--nd-border-soft);
+}
+.VGRCBZ5Vm52rbwpsF6sC:hover,
+.J3jNwSyBfH1VtgTwHcLA:hover {
+  background-color: var(--nd-surface-hi);
+}
+.GItlVEG3w34d6clnypnE {
+  background-color: #0e2140 !important;
+  box-shadow: inset 0 0 0 1px var(--nd-border-soft);
+}
+
+
+/* --------------------------------------------------------------------------
+   14. Text legibility over the wallpaper
+   -------------------------------------------------------------------------- */
+#main-view :is(h1, h2, h3, [data-encore-id="text"], [data-encore-id="textLink"], a),
+#Desktop_LeftSidebar_Id [data-encore-id="text"],
+#Desktop_PanelContainer_Id [data-encore-id="text"],
+#Desktop_PanelContainer_Id a {
+  text-shadow: var(--nd-text-shadow);
+}
+
+
+/* 14b. Spotify hard-codes neutral grey (#b3b3b3 / #a7a7a7 / #ffffffb3) on
+        these 1.3.4 classes (meta text, captions, small icons, placeholders).
+        Map it to the theme's ice-blue subtext so grey and blue never sit side
+        by side. Each selector has exactly the specificity of Spotify's base
+        rule, so it wins only by coming later; Spotify's own :hover / :focus /
+        selected rules (one class more) still win, keeping hover feedback. */
+.BFx9BGY5A5BKRJKYBP0S, .BPShXUFi3SifFS4KqD6a, .BZJeZJfMg85FHB2EnctV, .BhZkB0gqPWkL7muCrc74,
+:is(.CkXqRx5rHlLcjqL2Mxtl, .main-contextMenu-menuHeading), .ClCBLDH5ESC8o9xddMYD, .DSUBYRlCFJimzcPZEe6B, .Dhx60tzZLLd8sB9p4wEx,
+.E5jqqnVqnBYiVA_rV747, .Ex2yA6XVOQfn1nf3piwe, .FWRsAr8oHcFEkQHOl2AX .Yj_zNkImSe0mMBdGQYbB, .Fo55aiugE422EEhov_me,
+.HM4TP81LaeQueJ7V3NUs, .HxxbGYLbXtWjl1agviLJ, .IGNlcvwgdJjDNmVHU5pH, .J3jNwSyBfH1VtgTwHcLA,
+.JErDvR439NwXE3ogxkSK, .JIZpi79_a3Fr2et5Kki5, .JLPUx1jtRAIlY9TNO7PA, .JfvAd_noA1Ap88JWjSXb,
+.K1tdqP5dATWqE2bXBrJ2, .Kbw9yWAeCFURJsEjtM_m, .L4dFu0XJchBygpzWOIjG, .LvmITQtLwaeWOFdYJud5,
+.M2zvI7uRit6usxHiUUvC, .MM36a0PRC4hiERg4BUIg, .NOYinFFrqzkpQUjCGonG, .P5CbwjbdGcD_KDD0_yO5,
+.PFFaJYxu5YsZCx_pNYUG, .QU5XwXBO1CidmPLJmOnL, .QhBqmDmYR8NLpyFOC89B, .RIpmbGifZMEyNyeIdFuL .FM_TDne2c0lEFmv2rCTu,
+.RLL8BTyYwmxZoGy35Z4o, .RVUfC50uCQ7cL5hh6ksS, .Sb0O9WdrLUZ0byCFFvl7 a, .ThUGGr85_AM_MZDx2DOq,
+.V98T2XXFopAg_1vVc11e, .VGRCBZ5Vm52rbwpsF6sC, .ViiK3vHH1srjEULlPmeV, .VmyPTbZ8B5LviWNMcRmF,
+.VyE74Mf5dDAesNJbgna3, .XlUK3hylsrTTBpiIDknC, .XloVjaWCVJMgS8L6tN_Y a, .a8kTghFGOrZaA6ZTg1ya,
+.aZgP3OqKrpaur_vdUJSt .oaw0ixVhPYH5pzes5WZH, .afW3N7afALyoE9C1hb7A, .b2qqwGENeW3gBp9kRsUm, .bCN24YFEQYPeCaEkfUOl,
+:is(.bbuQVZEnHzXmFz8pfIr9, .playlist-playlist-subtitle), .eZ2ZJGk4hi2311iwscj8, :is(.ey93Xas9BaG4lff6zbPo, .playlist-playlist-playlistInlineCurationBackButton), .f6vv4IzdjYsjAPIAxc3z,
+.fvzNo2qvNZhc7H_XDz6v, .g9D4HnXX2Wf0tPUzNllL, .gwsilAFGh2vaS0TxwW7D, .hHdNkKlctvzt4HJyjMIg,
+.hPlHFpaAaW03k17NftFR, .ieqvwwh63oLhRmdGH4Fg, .iqOZNMeNrVPnnXG5n3Q9, .iuu4mM8fYOxEBCpgYlxW,
+.jt97b8w9KfpZ4jbps0mw, .kJveT1HanIIIhCUGkCUd a, .kk3DmG0UJzfE7fWwWL5u, .kqwWdqf0jjN0WjnfBsN8,
+.ktkZppIa1eATOPoLyMZl, .ljiX7AklYHZFioVkxoib, .mA2_Dbltfp_uxVJ3uUO2, .mXlJk4_T6MUs4nV6uXXQ,
+.mZ3yIpfK3xLM7ShTOy5J, .nNR6xUVXUOcqsc3HNVBA, .neCdjYwK0u4gglySK2hR, .nvpXV3tpVP3yMN0ezGWA,
+.oIS_AHeK7iyfUs3O2Qcj, .ojTYAIsRQtFIMsaigH6a, :is(.pEme6wNFg9h_aM8W4Z31, .playlist-playlist-playlistInlineCurationCloseButton), :is(.q6YWwSpiKqePGFJPlvJ9, .artist-artistOnTour-timeAndVenue),
+:is(.q6YWwSpiKqePGFJPlvJ9, .artist-artistOnTour-timeAndVenue):is(.bua3Ua64gK0rbXtVLprZ, .artist-artistOnTour-condensed), .qfCY_zUGuXmkpXJOO6sZ, .sBPipAdCEtMfvkwmUebL, .tO1rgTiTZ61bzjWq6W81,
+.tP2JtlOTVZ_x4n3uIsgh, .vMVhR6dGPrzhWFs7wlU1, .vZFG_g9cDGIQRGO2TQ2U, .vz0aRJw1Dsts6KhXIU1q,
+.wXZ3BJned9MKzgJY7wbb, .xCkbEfj8ttMWrm0ObMfP, :is(.xxFbjJSCOVJajMiw3C2Q, .main-entityHeader-metaDataText), .ycRfVQShNkw9qIVP8icJ .dT5UjPHRBPYJoW9V407a a,
+.ycRfVQShNkw9qIVP8icJ .m0ApRhKSKmMW1ukfdSAs, .ycRfVQShNkw9qIVP8icJ .q52CAgY4fWKVu1vpMlXD a, .ycRfVQShNkw9qIVP8icJ .sI1N5SecsIJmHONbgwNe, :is(.ykvEHwh6cnqQ5YljK_ik, .main-trackList-eventTicketIcon) {
+  color: var(--nd-subtext);
+}
+
+/* Spotify sets --text-subdued to white 70% inline on header metadata
+   ("925 musicas, 62h", "2021 - 16 musicas") */
+#main-view [style*="--text-subdued"] {
+  --text-subdued: var(--nd-subtext) !important;
+}
+
+/* 14c. Small icons Spotify / extensions paint in translucent white */
+#liquid-lyrics-button:not(.active) {    /* Liquid Lyrics button in the player bar */
+  color: var(--nd-subtext) !important;
+}
+#liquid-lyrics-button:not(.active):is(:hover, :focus-visible) {
+  color: var(--nd-text) !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   15. Marketplace (Spicetify custom app)
+   -------------------------------------------------------------------------- */
+.marketplace-header {
+  background: rgba(3, 12, 28, 0.82) !important;
+  border: 1px solid var(--nd-border-soft) !important;
+  border-radius: 14px !important;
+  padding: 8px 10px !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35) !important;
+}
+/* the boxed toolbar is taller than Marketplace's flat bar; keep the first
+   section heading clear of it */
+.marketplace-content > .marketplace-card-type-heading:first-child {
+  padding-top: 14px !important;   /* padding: the margin collapses into its parent */
+}
+.marketplace-header-icon-button,
+.searchbar-bar,
+.Dropdown-control,
+.Dropdown-menu {
+  background-color: rgba(8, 28, 56, 0.85) !important;
+  border: 1px solid rgba(var(--nd-line-rgb), 0.22) !important;
+  color: var(--nd-text) !important;
+}
+.marketplace-header-icon-button:hover,
+.Dropdown-control:hover {
+  background-color: rgba(var(--nd-a2-rgb), 0.16) !important;
+  border-color: var(--nd-a2-fg) !important;
+}
+.searchbar-bar::placeholder {
+  color: rgba(var(--nd-subtext-rgb), 0.75) !important;
+}
+.searchbar-bar:focus {
+  border-color: var(--nd-a2-fg) !important;
+  box-shadow: 0 0 12px rgba(var(--nd-a2-rgb), 0.35) !important;
+  outline: 0 !important;
+}
+.marketplace-tabBar-headerItemLink {
+  border-radius: 9999px !important;
+}
+.marketplace-tabBar-active {
+  font-weight: 700 !important;
+}
+.marketplace-tabBar-headerItemLink:hover {
+  background: rgba(var(--nd-a2-rgb), 0.10) !important;
+}
+/* active tab: same solid pink-to-cyan pill as the selected filter chips */
+.marketplace-tabBar-active,
+.marketplace-tabBar-active:hover {
+  background: var(--nd-grad) !important;
+  box-shadow: 0 0 10px rgba(var(--nd-a1-rgb), 0.28) !important;
+  color: var(--nd-on-accent) !important;
+  text-shadow: none !important;
+}
+.marketplace-card-type-heading {
+  color: var(--nd-text) !important;
+  text-shadow: 0 0 10px rgba(var(--nd-a2-rgb), 0.45), 0 1px 2px rgba(0, 0, 0, 0.7) !important;
+}
+.marketplace-grid .main-card-card {
+  background: rgba(4, 15, 36, 0.74) !important;
+  border: 1px solid var(--nd-border-soft) !important;
+  border-radius: 12px !important;
+}
+.marketplace-grid .main-card-card:hover,
+.marketplace-grid .main-card-card:focus-within {
+  background: rgba(10, 30, 62, 0.88) !important;
+  border-color: rgba(var(--nd-line-rgb), 0.45) !important;
+}
+.marketplace-grid .main-card-card.marketplace-card--installed {
+  border-color: var(--nd-border-hot) !important;
+  box-shadow: inset 0 0 0 1px rgba(var(--nd-a1-rgb), 0.18) !important;
+}
+.marketplace-grid .main-cardImage-imageWrapper {
+  background-color: rgba(8, 28, 56, 0.85) !important;
+}
+.marketplace-grid li.marketplace-card__tag {
+  background: rgba(var(--nd-a2-rgb), 0.14) !important;
+  color: var(--nd-text) !important;
+}
+.marketplace-card__description,
+.marketplace-card__bottom-meta,
+.marketplace-grid .main-card-card .main-cardSubHeader-root,
+.marketplace-grid .main-card-card p {
+  color: var(--nd-subtext) !important;
+}
+/* Marketplace toggles (off knob was black on #535353) */
+[class*="toggle-module__toggle-indicator-wrapper"] {
+  background-color: #3b5180 !important;
+}
+[class*="toggle-module__toggle-indicator___"] {
+  background-color: var(--nd-text) !important;
+}
+[class*="toggle-module__toggle-input"]:checked ~ [class*="toggle-module__toggle-indicator-wrapper"] {
+  background: var(--nd-grad) !important;
+  box-shadow: 0 0 10px rgba(var(--nd-a2-rgb), 0.40) !important;
+}
+[class*="toggle-module__toggle-input"]:checked ~ [class*="toggle-module__toggle-indicator-wrapper"] [class*="toggle-module__toggle-indicator___"] {
+  background-color: var(--nd-on-accent) !important;
+}
+
+.marketplace-grid [class*="button-module__circle"] {
+  background: var(--nd-grad) !important;
+  color: var(--nd-on-accent) !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   16. Extensions
+   -------------------------------------------------------------------------- */
+
+/* Liquid Lyrics paints the cover art as an opaque blurred canvas behind the
+   whole right panel; keep it as a soft, darkened tint so the glass,
+   wallpaper and secondary text stay readable whatever the cover colour */
+.liquid-lyrics-bg.ll-bg-sidebar {
+  opacity: 0.28 !important;
+  filter: brightness(0.7) saturate(1.1) !important;
+}
+
+/* Liquid Lyrics card in the Now Playing view */
+.liquid-lyrics-sidebar-card {
+  background: rgba(3, 12, 28, 0.62) !important;
+  border: 1px solid var(--nd-border-soft) !important;
+}
+.liquid-lyrics-sidebar-card .liquid-lyrics-line {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+}
+/* inactive lines: the extension fills them with white at 30-40% opacity,
+   which reads as flat grey. Fill them ice-blue and raise the opacity a bit;
+   the active line (and its karaoke sweep) keeps the extension's colours. */
+.liquid-lyrics-sidebar-card .liquid-lyrics-line.future:not(.liquid-lyrics-static),
+.liquid-lyrics-sidebar-card .liquid-lyrics-line.future:not(.liquid-lyrics-static) :is(.ll-syllable, .ll-letter) {
+  -webkit-text-fill-color: var(--nd-subtext) !important;
+}
+.liquid-lyrics-sidebar-card .liquid-lyrics-line.past:not(.ll-finishing):not(.ll-outgoing),
+.liquid-lyrics-sidebar-card .liquid-lyrics-line.past:not(.ll-finishing):not(.ll-outgoing) :is(.ll-syllable, .ll-letter) {
+  -webkit-text-fill-color: color-mix(in srgb, var(--nd-text) 70%, var(--nd-subtext)) !important;
+}
+.liquid-lyrics-sidebar-card .liquid-lyrics-line.future:not(.active):not(.liquid-lyrics-interlude) {
+  opacity: 0.58 !important;
+}
+.liquid-lyrics-sidebar-card .liquid-lyrics-line.past:not(.active):not(.liquid-lyrics-interlude):not(.ll-outgoing) {
+  opacity: 0.62 !important;
+}
+
+/* --------------------------------------------------------------------------
+   17. Final polish (v1.2)
+   -------------------------------------------------------------------------- */
+/* full-bleed hero (artist, song radio): fade the picture out while the page
+   scrolls, driven by Spotify's own --scroll (0..1) so no ghost of the photo
+   stays behind the track list */
+@keyframes nd-hero-out {      /* --scroll stops updating once the header
+                                  leaves the view (~0.3-0.45), so finish early */
+  0% { opacity: 1; }
+  24%, 100% { opacity: 0; }
+}
+.TmjKsp7ZdmzlG9vtR_94 {                 /* 1.3.4 hero image + overlay layers */
+  animation: 1s linear paused nd-hero-out both;
+  animation-delay: calc(var(--scroll, 0) * -1s);
+}
+
+/* Labs Studio / Connect intro popover (navy instead of #f5f5f5): children
+   that Spotify hard-codes for a light surface */
+.zr8AsNa8BVNb42zwdRWJ .kUafjGrysc84VGyCY9mQ {     /* 1.3.4 secondary "Próximo" */
+  color: var(--nd-text) !important;
+  border-color: var(--nd-border) !important;
+}
+.zr8AsNa8BVNb42zwdRWJ .yZy4ZJUXRk2zRCSfnUtg {     /* 1.3.4 primary (#000 pill) */
+  background: var(--nd-grad) !important;
+  color: var(--nd-on-accent) !important;
+}
+.zr8AsNa8BVNb42zwdRWJ .VnHPFhdl_kznQ8ikZ3rC {     /* 1.3.4 active slide dot */
+  background-color: var(--nd-a2-fg) !important;
+}
+.zr8AsNa8BVNb42zwdRWJ .o19AQ_lvxMl3GDIQDz0H {     /* 1.3.4 rotating title */
+  color: var(--nd-a2-fg) !important;
+}
+.lM2eBkLcXrJnZHyQvMcH {                           /* 1.3.4 header pill (#fff) */
+  background: var(--nd-surface-hi) !important;
+  border-color: var(--nd-border-soft) !important;
+}
+
+/* popover pointer arrow drawn in hard-coded #282828 */
+.CVxTfo6NqZXuAMThbe10 .z6coOlpKT2yu7SYkBjlt,
+.CVxTfo6NqZXuAMThbe10 .z6coOlpKT2yu7SYkBjlt::before {   /* 1.3.4 */
+  background-color: var(--nd-surface) !important;
+}
+
+/* last hard-coded #1ed760 accents (podcast charts market picker, queue preview) */
+.gJX7IfdcGYgVCl6V6_Rb,
+.fXDui7yIz3tvO9BN8xqz,
+.bFdMjqEPzYVNHlpQzgiE {                 /* 1.3.4 */
+  color: var(--nd-a2-fg) !important;
+}
+
+/* gallery (artist "Sobre"): next/prev discs over the black letterbox */
+.VGRCBZ5Vm52rbwpsF6sC,
+.J3jNwSyBfH1VtgTwHcLA {                 /* 1.3.4 */
+  box-shadow: 0 0 0 1px var(--nd-border) !important;
+}
+
+/* dark text on light pills must stay crisp: drop the legibility halo */
+:is(.encore-inverted-set, .encore-inverted-light-set, .encore-bright-accent-set, .encore-positive-set) :is(h1, h2, h3, [data-encore-id="text"], [data-encore-id="textLink"], a) {
+  text-shadow: none !important;
+}
+
+/* Marketplace asks for var(--font-family), which 1.3.4 no longer defines */
+:root {
+  --font-family: SpotifyMixUI, var(--encore-body-font-stack, sans-serif);
+}
+
+
+
+/* --------------------------------------------------------------------------
+   18. Spicetify's tooltips (top-bar buttons of extensions) are a bare
+       <div class="main-contextMenu-tippy"> inside the tippy popper (tippy
+       renames that popper "tippy-N", so it is NOT #context-menu) and nothing
+       styles it; give it the look of Spotify's own tooltips (section 13).
+       Spicetify adds the EnterActive class one frame after mounting, so it
+       fades in.
+   -------------------------------------------------------------------------- */
+div.main-contextMenu-tippy {
+  box-sizing: border-box;
+  max-width: 320px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--nd-text);
+  background: var(--nd-surface);
+  box-shadow: 0 0 0 1px var(--nd-border), 0 8px 18px rgba(0, 0, 0, 0.45);
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+div.main-contextMenu-tippy.main-contextMenu-tippyEnterActive {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.Root__top-container, .Root > :where(div:has(#main-view)))::before,
+  div.main-contextMenu-tippy {
+    transition: none;
+  }
+}

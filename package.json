@@ -1,0 +1,17 @@
+{
+  "name": "neondrift",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NeonDrift for Spicetify: the NeonDrift Ambient extension (ambient mode, neon visualizer, settings panel) and the NeonDrift theme (neon glass layout).",
+  "author": "Iran",
+  "copyrightYear": "2026",
+  "license": "MIT",
+  "homepage": "",
+  "type": "module",
+  "scripts": {
+    "build": "node tools/build/build.mjs",
+    "build:dev": "node tools/build/build.mjs --dev",
+    "check": "node tools/build/check.mjs"
+  },
+  "engines": { "node": ">=18" }
+}

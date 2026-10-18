@@ -80,6 +80,35 @@ spicetify apply
 - Deixe o Spotify quieto com música tocando e o modo ambiente entra sozinho. Mexa o mouse ou aperte uma tecla para sair.
 - Os ajustes ficam guardados neste computador (no armazenamento local do Spotify). Nada é enviado para lugar nenhum.
 
+## Manter o NeonDrift depois das atualizações do Spotify (Windows)
+
+Quando o Spotify se atualiza, ele põe de volta os arquivos originais, e o tema e a extensão somem até o Spicetify
+ser aplicado de novo. O ajudante opcional em [`extras/auto-reapply`](extras/auto-reapply) faz isso sozinho em todo
+login do Windows. Serve para qualquer instalação do Spicetify, não só para o NeonDrift.
+
+- **Instalar**: baixe este repositório (*Code > Download ZIP*), descompacte, abra `extras/auto-reapply` e dê dois
+  cliques em `install.bat`. Ele confere se o Spotify e o Spicetify estão lá, copia o ajudante para
+  `%LOCALAPPDATA%\NeonDrift` e cria o atalho **NeonDrift Spotify** na pasta Inicializar. Não precisa de administrador.
+- **Abrir o Spotify no login, ou só consertar?** O instalador pergunta. Responda **n** e o ajudante só conserta: ele
+  só abre o Spotify de novo se precisou fechá-lo. Pelo terminal: `install.bat -NoLaunch`.
+- **O que ele faz**: uns 20 s depois do login, compara a versão do Spotify com a que o Spicetify guardou no backup e
+  confere se os arquivos do Spotify ainda carregam o Spicetify. Se o Spotify atualizou, ele fecha o Spotify, roda
+  `spicetify backup apply` (ou `spicetify apply`), tenta mais uma vez depois de `spicetify update` se precisar, abre
+  o Spotify de novo e mostra um aviso. Se não, só abre o Spotify (ou não faz nada).
+- **Na hora**: `Open Spotify (NeonDrift).bat` (nessa pasta e em `%LOCALAPPDATA%\NeonDrift`) faz a mesma conferência na
+  hora, para quando o Spotify atualiza com você já logado.
+- **Privacidade**: roda só no seu computador e não envia nada. O único acesso à internet é o atualizador do próprio
+  Spicetify (`spicetify update`, nessa segunda tentativa). `spicetify config check_spicetify_update 0` desliga isso, o
+  que vale a pena enquanto o NeonDrift precisa do Spicetify 2 (o `spicetify update` instala o Spicetify mais novo).
+  Ele nunca mexe na sua conta, nas configurações nem no volume do Spotify.
+- **Log**: `%LOCALAPPDATA%\NeonDrift\startup.log` (cole o caminho no Win+R). Pelo terminal,
+  `"Open Spotify (NeonDrift).bat" -DryRun` só diz se o Spicetify precisa ser aplicado de novo.
+- **Desinstalar**: dois cliques em `uninstall.bat` (ele pergunta se apaga também os arquivos copiados e o log), ou
+  apague **NeonDrift Spotify** da pasta Inicializar (Win+R, `shell:startup`).
+- Precisa do Spotify do [spotify.com](https://www.spotify.com/download) (o Spicetify não funciona com a versão da
+  Microsoft Store; o instalador avisa se for essa a sua) e do Spicetify. Mensagens em português ou inglês, conforme o
+  idioma do Windows.
+
 ## Imagens
 
 | | |
@@ -115,6 +144,9 @@ para o NeonDrift: nenhuma capa, foto ou nome de artista de verdade.
   aparelhos; fones muito lentos ainda podem atrasar um pouquinho.
 - **O idioma está errado.** Ele segue o idioma do Spotify (Configurações > Idioma): português para Português,
   inglês para os outros idiomas.
+- **O NeonDrift sumiu depois de uma atualização do Spotify.** O Spotify pôs de volta os arquivos originais: rode
+  `spicetify backup apply`. No Windows, o
+  [ajudante de atualizações](#manter-o-neondrift-depois-das-atualizações-do-spotify-windows) faz isso sozinho em todo login.
 - **Uma atualização do Spotify estragou parte do visual.** O Spotify troca os nomes internos das classes nas
   atualizações. O tema foi escrito para aguentar a maior parte disso e a extensão continua funcionando; veja
   [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) e procure uma versão nova do tema.

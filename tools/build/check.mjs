@@ -85,6 +85,45 @@ if (existsSync(join(root, "previews"))) for (const f of previewFiles("previews")
   ok(kb(f) < lim, `${f} ${kb(f).toFixed(0)} KB < ${lim} KB`);
 }
 
+// ---- Windows helper (extras/auto-reapply) ----------------------------------------------------------------
+const HELPER = "extras/auto-reapply";
+if (existsSync(join(root, HELPER))) {
+  const files = readdirSync(join(root, HELPER));
+  for (const f of ["neondrift-startup.ps1", "install.ps1", "uninstall.ps1", "install.bat", "uninstall.bat", "Open Spotify (NeonDrift).bat"]) ok(files.includes(f), `${HELPER}: has ${f}`);
+  const ps1 = files.filter((f) => f.endsWith(".ps1"));
+  for (const f of ps1) {
+    const buf = readFileSync(join(root, HELPER, f));
+    const bom = buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf;
+    ok(bom || !buf.some((b) => b > 0x7f), `${HELPER}/${f}: UTF-8 with BOM (Windows PowerShell 5.1 reads a file without one as ANSI)`);
+    // the message tables: en = @{ Key = '...' } and pt = @{ ... } with the same keys
+    const s = buf.toString("utf8");
+    const keys = (lang) => { const m = s.match(new RegExp("^\\s*" + lang + " = @\\{\\r?\\n([\\s\\S]*?)^\\s*\\}", "m")); return m ? [...m[1].matchAll(/^\s*(\w+)\s*=/gm)].map((x) => x[1]).sort() : []; };
+    const en = keys("en"), pt = keys("pt");
+    ok(en.length > 0 && JSON.stringify(en) === JSON.stringify(pt), `${HELPER}/${f}: same message keys in en and pt (${en.length})`);
+    const usedKeys = [...new Set([...s.matchAll(/\bT '(\w+)'/g)].map((m) => m[1]))];
+    const unknown = usedKeys.filter((k) => !en.includes(k));
+    ok(unknown.length === 0, `${HELPER}/${f}: every message used exists` + (unknown.length ? ": " + unknown.join(", ") : ""));
+  }
+  for (const f of files.filter((f) => f.endsWith(".bat"))) {
+    const buf = readFileSync(join(root, HELPER, f)), s = buf.toString("latin1");
+    ok(!buf.some((b) => b > 0x7f), `${HELPER}/${f}: ASCII only (cmd.exe reads .bat files in the console code page)`);
+    ok(!/(^|[^\r])\n/.test(s), `${HELPER}/${f}: CRLF line endings`);
+    for (const m of s.matchAll(/%~dp0([^"%\r\n]+\.ps1)/g)) ok(files.includes(m[1]), `${HELPER}/${f}: calls ${m[1]}, which exists`);
+  }
+  // PowerShell syntax, with the parser of Windows PowerShell 5.1 (Windows only)
+  if (process.platform === "win32") {
+    const list = ps1.map((f) => "'" + join(root, HELPER, f).replace(/'/g, "''") + "'").join(", ");
+    const cmd = "$bad = 0; foreach ($f in @(" + list + ")) { $t = $null; $e = $null; [void][System.Management.Automation.Language.Parser]::ParseFile($f, [ref]$t, [ref]$e); foreach ($x in $e) { Write-Output ($f + ':' + $x.Extent.StartLineNumber + ': ' + $x.Message); $bad = 1 } }; exit $bad";
+    try {
+      execFileSync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", cmd], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+      ok(true, `${HELPER}: the ${ps1.length} scripts parse (Windows PowerShell)`);
+    } catch (e) {
+      if (e.code === "ENOENT") console.log("SKIP PowerShell syntax check (no powershell.exe)");
+      else ok(false, `${HELPER}: the scripts parse (Windows PowerShell): ` + String(e.stdout || e.message).trim());
+    }
+  } else console.log("SKIP PowerShell syntax check (not Windows)");
+}
+
 // ---- private data ---------------------------------------------------------------------------------------
 try { execFileSync(node, [join(root, "tools/build/check-private.mjs")], { stdio: "inherit" }); ok(true, "private-data check"); } catch (e) { ok(false, "private-data check"); }
 

@@ -44,7 +44,7 @@ const walk = (d) => {
 for (const d of local.corpusDirs || []) walk(join(root, d));
 
 const problems = [];
-const TEXT = new Set([".js", ".mjs", ".cjs", ".json", ".css", ".ini", ".md", ".txt", ".html", ".svg", ".yml", ".yaml", ""]);
+const TEXT = new Set([".js", ".mjs", ".cjs", ".json", ".css", ".ini", ".md", ".txt", ".html", ".svg", ".yml", ".yaml", ".ps1", ".bat", ""]);
 for (const rel of list) {
   const p = join(root, rel);
   if (!existsSync(p) || statSync(p).isDirectory()) continue;

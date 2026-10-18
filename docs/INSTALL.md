@@ -25,7 +25,8 @@ Spicetify's installer always installs the newest release unless you name a versi
   ```
 
 Do not run `spicetify upgrade` while you want to keep NeonDrift: it moves to the newest Spicetify (3.x once that is
-the latest release). `spicetify config check_spicetify_update 0` stops the reminder.
+the latest release). `spicetify config check_spicetify_update 0` stops the reminder, and the `spicetify update` retry
+of the [Windows update helper](#keep-it-applied-after-spotify-updates-windows) too.
 
 Spicetify's folder: `%appdata%\spicetify` on Windows, `~/.config/spicetify` on Linux and macOS
 (`spicetify path userdata` prints it).
@@ -77,6 +78,14 @@ Your settings carry over as they are (same storage, same format).
 ## Update
 
 Copy the new files over the old ones and run `spicetify apply`. Marketplace installs update by themselves.
+
+## Keep it applied after Spotify updates (Windows)
+
+A Spotify update puts back Spotify's original files, so NeonDrift is gone until you run `spicetify backup apply`
+again. The optional helper in `extras/auto-reapply` does it at every Windows sign-in (double-click `install.bat`;
+`uninstall.bat` removes it). See
+[the README](../README.md#keep-neondrift-after-spotify-updates-windows) for what it does, the fix-only option, its log
+and privacy.
 
 ## Uninstall
 

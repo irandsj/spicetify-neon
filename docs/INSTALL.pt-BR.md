@@ -26,7 +26,8 @@ versão 2.x:
   ```
 
 Não rode `spicetify upgrade` enquanto quiser continuar com o NeonDrift: ele passa para o Spicetify mais novo (o 3.x,
-quando ele virar a versão principal). `spicetify config check_spicetify_update 0` desliga o lembrete.
+quando ele virar a versão principal). `spicetify config check_spicetify_update 0` desliga o lembrete, e também a
+tentativa com `spicetify update` do [ajudante de atualizações do Windows](#manter-aplicado-depois-das-atualizações-do-spotify-windows).
 
 Pasta do Spicetify: `%appdata%\spicetify` no Windows, `~/.config/spicetify` no Linux e no macOS
 (`spicetify path userdata` mostra onde fica).
@@ -78,6 +79,14 @@ Os seus ajustes continuam como estão (mesmo lugar, mesmo formato).
 ## Atualizar
 
 Copie os arquivos novos por cima dos antigos e rode `spicetify apply`. Pelo Marketplace, atualiza sozinho.
+
+## Manter aplicado depois das atualizações do Spotify (Windows)
+
+Uma atualização do Spotify põe de volta os arquivos originais dele, e o NeonDrift some até você rodar
+`spicetify backup apply` de novo. O ajudante opcional em `extras/auto-reapply` faz isso em todo login do Windows (dois
+cliques em `install.bat`; o `uninstall.bat` tira). Veja
+[o README](../README.pt-BR.md#manter-o-neondrift-depois-das-atualizações-do-spotify-windows) para o que ele faz, a opção
+de só consertar, o log e a privacidade.
 
 ## Desinstalar
 

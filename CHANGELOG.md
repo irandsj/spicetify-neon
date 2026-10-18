@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.1
+
+A new optional Windows helper. The extension and the theme are unchanged (the extension file still says 1.0.0).
+
+**Spotify update helper** (Windows, `extras/auto-reapply`)
+- At every Windows sign-in, applies Spicetify again when Spotify has updated itself (Spotify's version is not the
+  one Spicetify backed up, `xpui.spa` is back, or `index.html` no longer loads Spicetify): `spicetify backup apply` on
+  a clean Spotify, `spicetify apply` on a patched one, one more try after `spicetify update`; then it opens Spotify
+  again and shows a notification. Works with any Spicetify setup.
+- `install.bat` copies it to `%LOCALAPPDATA%\NeonDrift` and adds a **NeonDrift Spotify** Startup shortcut that runs
+  with no window (`conhost --headless`; a hidden PowerShell window on Windows older than 10 2004). It asks whether to
+  open Spotify at sign-in or only fix (`install.bat -NoLaunch`). `uninstall.bat` removes the shortcut and, if you
+  want, the files and the log.
+- `Open Spotify (NeonDrift).bat` runs the same check at once; `-DryRun` only reports.
+- Says so when Spotify or Spicetify is missing, or when Spotify is the Microsoft Store version (which Spicetify does
+  not support). Skips `spicetify update` when Spicetify's `check_spicetify_update` is 0.
+- Runs only on your computer; never touches the Spotify account, settings or volume. English and Português (BR),
+  following Windows' display language. Log: `%LOCALAPPDATA%\NeonDrift\startup.log`.
+
 ## 1.0.0
 
 First public release, in two parts.

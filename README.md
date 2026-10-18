@@ -85,6 +85,36 @@ spicetify apply
 - Leave Spotify alone while music plays and ambient mode starts by itself. Move the mouse or press any key to leave.
 - Your settings are saved on this computer (Spotify's local storage). Nothing is sent anywhere.
 
+## Keep NeonDrift after Spotify updates (Windows)
+
+When Spotify updates itself it puts its original files back, and the theme and the extension are gone until
+Spicetify is applied again. The optional helper in
+[`extras/auto-reapply`](https://github.com/irandsj/spicetify-neon/tree/main/extras/auto-reapply) does that for you at
+every Windows sign-in. It works with any Spicetify setup, not only NeonDrift.
+
+- **Install**: download this repository (*Code > Download ZIP*), unzip it, open `extras/auto-reapply` and
+  double-click `install.bat`. It checks that Spotify and Spicetify are there, copies the helper to
+  `%LOCALAPPDATA%\NeonDrift` and adds a **NeonDrift Spotify** shortcut to your Startup folder. No admin rights needed.
+- **Open Spotify at sign-in, or only fix?** The installer asks. Answer **n** and the helper only fixes: it opens
+  Spotify again only if it had to close it. From a terminal: `install.bat -NoLaunch`.
+- **What it does**: about 20 s after you sign in, it compares Spotify's version with the one Spicetify backed up and
+  checks that Spotify's files still load Spicetify. If Spotify has updated, it closes Spotify, runs
+  `spicetify backup apply` (or `spicetify apply`), tries once more after `spicetify update` if needed, opens Spotify
+  again and shows a notification. Otherwise it only opens Spotify (or does nothing).
+- **Right away**: `Open Spotify (NeonDrift).bat` (in that folder and in `%LOCALAPPDATA%\NeonDrift`) runs the same check
+  at once, for when Spotify updates while you are signed in.
+- **Privacy**: it runs only on your computer and sends nothing. The only network access is Spicetify's own updater
+  (`spicetify update`, on that retry). `spicetify config check_spicetify_update 0` turns it off, a good idea while
+  NeonDrift needs Spicetify 2 (`spicetify update` installs the newest Spicetify). It never touches your Spotify account,
+  settings or volume.
+- **Log**: `%LOCALAPPDATA%\NeonDrift\startup.log` (paste the path into Win+R). From a terminal,
+  `"Open Spotify (NeonDrift).bat" -DryRun` only reports whether Spicetify has to be applied again.
+- **Uninstall**: double-click `uninstall.bat` (it asks whether to delete the copied files and the log too), or delete
+  **NeonDrift Spotify** from the Startup folder (Win+R, `shell:startup`).
+- Needs Spotify from [spotify.com](https://www.spotify.com/download) (Spicetify does not support the Microsoft Store
+  version; the installer tells you if that is the one you have) and Spicetify. Messages in English or Portuguese,
+  following Windows' display language.
+
 ## Screenshots
 
 | | |
@@ -120,6 +150,9 @@ real album covers, artist photos or names.
   other devices automatically; very slow headsets may still lag a bit.
 - **The language is wrong.** It follows Spotify's language (Settings > Language): Portuguese for Português,
   English for every other language.
+- **NeonDrift disappeared after a Spotify update.** Spotify put its original files back: run `spicetify backup apply`.
+  On Windows, the [update helper](https://github.com/irandsj/spicetify-neon#keep-neondrift-after-spotify-updates-windows)
+  does it for you at every sign-in.
 - **A Spotify update broke part of the look.** Spotify renames its internal class names on updates. The theme is
   written to survive most of it, and the extension keeps working; see
   [docs/COMPATIBILITY.md](https://github.com/irandsj/spicetify-neon/blob/main/docs/COMPATIBILITY.md) and check for a theme update.
@@ -134,4 +167,4 @@ Made by **Iran**. MIT License, see [LICENSE](https://github.com/irandsj/spicetif
 Not affiliated with Spotify or Spicetify. Spotify is a trademark of Spotify AB. Spicetify is not included.
 
 Developers: the extension is built from `src/` with `node tools/build/build.mjs` (Node 18+, no dependencies);
-`node tools/build/check.mjs` runs every release check. See [CHANGELOG.md](https://github.com/irandsj/spicetify-neon/blob/main/CHANGELOG.md).
+`node tools/build/check.mjs` runs every release check (including the Windows helper's scripts). See [CHANGELOG.md](https://github.com/irandsj/spicetify-neon/blob/main/CHANGELOG.md).

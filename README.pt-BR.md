@@ -87,24 +87,34 @@ ser aplicado de novo. O ajudante opcional em [`extras/auto-reapply`](extras/auto
 login do Windows. Serve para qualquer instalação do Spicetify, não só para o NeonDrift.
 
 - **Instalar**: baixe este repositório (*Code > Download ZIP*), descompacte, abra `extras/auto-reapply` e dê dois
-  cliques em `install.bat`. Ele confere se o Spotify e o Spicetify estão lá, copia o ajudante para
+  cliques em `install.bat` (se o Windows perguntar se quer executar, escolha **Executar**, ou **Mais informações >
+  Executar assim mesmo**). Ele confere se o Spotify e o Spicetify estão lá, copia o ajudante para
   `%LOCALAPPDATA%\NeonDrift` e cria o atalho **NeonDrift Spotify** na pasta Inicializar. Não precisa de administrador.
+- **Recomendado para o NeonDrift**: `spicetify config check_spicetify_update 0`. Senão, quando uma reaplicação falha,
+  o ajudante roda `spicetify update` sem ninguém olhando, e isso pode passar você para o Spicetify 3, que ainda não
+  carrega o NeonDrift. O instalador lembra disso enquanto estiver ligado.
 - **Abrir o Spotify no login, ou só consertar?** O instalador pergunta. Responda **n** e o ajudante só conserta: ele
-  só abre o Spotify de novo se precisou fechá-lo. Pelo terminal: `install.bat -NoLaunch`.
+  só abre o Spotify de novo se precisou fechá-lo. Pelo terminal: nessa pasta, digite `cmd` na barra de endereço do
+  Explorador de Arquivos e aperte Enter, depois rode `.\install.bat -NoLaunch` (no PowerShell funciona igual).
 - **O que ele faz**: uns 20 s depois do login, compara a versão do Spotify com a que o Spicetify guardou no backup e
   confere se os arquivos do Spotify ainda carregam o Spicetify. Se o Spotify atualizou, ele fecha o Spotify, roda
   `spicetify backup apply` (ou `spicetify apply`), tenta mais uma vez depois de `spicetify update` se precisar, abre
-  o Spotify de novo e mostra um aviso. Se não, só abre o Spotify (ou não faz nada).
+  o Spotify de novo e mostra um aviso. Se não, só abre o Spotify (ou não faz nada). Só roda uma cópia por vez, e ele
+  só fecha o seu próprio Spotify.
 - **Na hora**: `Open Spotify (NeonDrift).bat` (nessa pasta e em `%LOCALAPPDATA%\NeonDrift`) faz a mesma conferência na
   hora, para quando o Spotify atualiza com você já logado.
-- **Privacidade**: roda só no seu computador e não envia nada. O único acesso à internet é o atualizador do próprio
-  Spicetify (`spicetify update`, nessa segunda tentativa). `spicetify config check_spicetify_update 0` desliga isso, o
-  que vale a pena enquanto o NeonDrift precisa do Spicetify 2 (o `spicetify update` instala o Spicetify mais novo).
-  Ele nunca mexe na sua conta, nas configurações nem no volume do Spotify.
-- **Log**: `%LOCALAPPDATA%\NeonDrift\startup.log` (cole o caminho no Win+R). Pelo terminal,
-  `"Open Spotify (NeonDrift).bat" -DryRun` só diz se o Spicetify precisa ser aplicado de novo.
-- **Desinstalar**: dois cliques em `uninstall.bat` (ele pergunta se apaga também os arquivos copiados e o log), ou
-  apague **NeonDrift Spotify** da pasta Inicializar (Win+R, `shell:startup`).
+- **Privacidade**: roda só no seu computador, e o ajudante em si não envia nada. Enquanto o `check_spicetify_update`
+  estiver em 1, o Spicetify pode procurar no GitHub uma versão nova dele mesmo quando o ajudante o roda, e a segunda
+  tentativa roda `spicetify update`; com 0, nenhum dos dois acontece. Ele nunca mexe na sua conta, nas configurações
+  nem no volume do Spotify.
+- **Log**: `%LOCALAPPDATA%\NeonDrift\startup.log` (cole o caminho no Win+R). Para só conferir, sem mudar nada, rode
+  isto num terminal (Prompt de Comando ou PowerShell):
+  `cmd /c call "%LOCALAPPDATA%\NeonDrift\Open Spotify (NeonDrift).bat" -DryRun`.
+- **Desinstalar**: dois cliques em `uninstall.bat`, nessa pasta ou em `%LOCALAPPDATA%\NeonDrift` (ele pergunta se
+  apaga também os arquivos copiados e o log). À mão: apague **NeonDrift Spotify** da pasta Inicializar (Win+R,
+  `shell:startup`) e a pasta `%LOCALAPPDATA%\NeonDrift`.
+- **Vai voltar ao Spotify original** (`spicetify restore`) ou tirar o Spicetify? Desinstale o ajudante antes: ele não
+  distingue um restore de uma atualização do Spotify, então aplicaria o Spicetify de novo no próximo login.
 - Precisa do Spotify do [spotify.com](https://www.spotify.com/download) (o Spicetify não funciona com a versão da
   Microsoft Store; o instalador avisa se for essa a sua) e do Spicetify. Mensagens em português ou inglês, conforme o
   idioma do Windows.

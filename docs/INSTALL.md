@@ -83,11 +83,15 @@ Copy the new files over the old ones and run `spicetify apply`. Marketplace inst
 
 A Spotify update puts back Spotify's original files, so NeonDrift is gone until you run `spicetify backup apply`
 again. The optional helper in `extras/auto-reapply` does it at every Windows sign-in (double-click `install.bat`;
-`uninstall.bat` removes it). See
+`uninstall.bat`, there or in `%LOCALAPPDATA%\NeonDrift`, removes it). See
 [the README](../README.md#keep-neondrift-after-spotify-updates-windows) for what it does, the fix-only option, its log
 and privacy.
 
 ## Uninstall
+
+If you installed the [Windows update helper](#keep-it-applied-after-spotify-updates-windows), run its `uninstall.bat`
+first (in `%LOCALAPPDATA%\NeonDrift`) when you want stock Spotify back (`spicetify restore`) or remove Spicetify: it
+cannot tell that from a Spotify update, and would apply Spicetify again at the next sign-in.
 
 ### Remove the extension
 

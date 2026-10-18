@@ -3,10 +3,12 @@
   Installs the NeonDrift Spotify update helper for the current Windows user.
 
 .DESCRIPTION
-  Checks that the Spotify desktop app and Spicetify are installed, copies neondrift-startup.ps1 and
-  "Open Spotify (NeonDrift).bat" to %LOCALAPPDATA%\NeonDrift and adds a "NeonDrift Spotify" shortcut
-  to the Startup folder, so that the helper runs at every Windows sign-in. Running it again updates
-  the copy and the shortcut. No administrator rights; nothing else on the system is changed.
+  Checks that the Spotify desktop app and Spicetify are installed, copies neondrift-startup.ps1,
+  "Open Spotify (NeonDrift).bat" and the uninstaller to %LOCALAPPDATA%\NeonDrift and adds a
+  "NeonDrift Spotify" shortcut to the Startup folder, so that the helper runs at every Windows sign-in.
+  Running it again updates the copy and the shortcut. No administrator rights; nothing else on the
+  system is changed (if Spotify or Spicetify is missing, nothing at all). It only reads Spicetify's
+  settings, to recommend check_spicetify_update = 0 when it is not.
 
   The shortcut starts the helper through "conhost --headless" (no window at all) when this Windows
   has it, else through a hidden PowerShell window.
@@ -55,8 +57,9 @@ $Messages = @{
     ModeFixOnly      = 'At sign-in: re-applies Spicetify if Spotify updated (does not open Spotify).'
     Hidden           = 'This Windows has no "conhost --headless": the shortcut uses a hidden PowerShell window, which may flash for a moment.'
     FixNow           = 'Spicetify is not applied right now. Double-click "Open Spotify (NeonDrift).bat" to fix it now, or it is fixed at the next sign-in.'
+    UpdateNote       = 'Recommended for NeonDrift: run   spicetify config check_spicetify_update 0   (it is on now). While it is on, the helper runs "spicetify update" when a re-apply fails, and that can move you to Spicetify 3, which does not load NeonDrift yet.'
     LogAt            = 'Log: {0}'
-    HowToRemove      = 'To remove it: uninstall.bat, or delete "NeonDrift Spotify" from the Startup folder (Win+R, shell:startup).'
+    HowToRemove      = 'To remove it: uninstall.bat (here or in {0}), or delete "NeonDrift Spotify" from the Startup folder (Win+R, shell:startup) and the folder {0}. Remove it before "spicetify restore" too, or it applies Spicetify again at the next sign-in.'
     Installed        = 'Installed.'
     LnkLaunch        = 'Opens Spotify and re-applies Spicetify if Spotify updated (NeonDrift)'
     LnkFixOnly       = 'Re-applies Spicetify if Spotify updated (NeonDrift)'
@@ -75,8 +78,9 @@ $Messages = @{
     ModeFixOnly      = 'No login: reaplica o Spicetify se o Spotify atualizou (não abre o Spotify).'
     Hidden           = 'Este Windows não tem o "conhost --headless": o atalho usa uma janela oculta do PowerShell, que pode piscar por um instante.'
     FixNow           = 'O Spicetify não está aplicado agora. Dê dois cliques em "Open Spotify (NeonDrift).bat" para consertar já, ou ele é consertado no próximo login.'
+    UpdateNote       = 'Recomendado para o NeonDrift: rode   spicetify config check_spicetify_update 0   (agora está ligado). Ligado, o ajudante roda "spicetify update" quando uma reaplicação falha, e isso pode passar você para o Spicetify 3, que ainda não carrega o NeonDrift.'
     LogAt            = 'Log: {0}'
-    HowToRemove      = 'Para tirar: uninstall.bat, ou apague "NeonDrift Spotify" da pasta Inicializar (Win+R, shell:startup).'
+    HowToRemove      = 'Para tirar: uninstall.bat (aqui ou em {0}), ou apague "NeonDrift Spotify" da pasta Inicializar (Win+R, shell:startup) e a pasta {0}. Tire também antes de um "spicetify restore", senão ele aplica o Spicetify de novo no próximo login.'
     Installed        = 'Instalado.'
     LnkLaunch        = 'Abre o Spotify e reaplica o Spicetify se o Spotify atualizou (NeonDrift)'
     LnkFixOnly       = 'Reaplica o Spicetify se o Spotify atualizou (NeonDrift)'
@@ -91,7 +95,18 @@ if ($Lang -eq 'auto') {
 function T([string]$key) { return $Messages[$Lang][$key] }
 
 $ShortcutName = 'NeonDrift Spotify.lnk'
-$Files = @('neondrift-startup.ps1', 'Open Spotify (NeonDrift).bat')
+# uninstall.ps1 lists the same files in $Known (the only ones it deletes)
+$Files = @('neondrift-startup.ps1', 'Open Spotify (NeonDrift).bat', 'uninstall.ps1', 'uninstall.bat')
+
+function Get-IniValue([string]$path, [string]$section, [string]$key) {
+  if (-not $path -or -not (Test-Path -LiteralPath $path)) { return '' }
+  $inSection = $false
+  foreach ($line in Get-Content -LiteralPath $path -Encoding UTF8) {
+    if ($line -match '^\s*\[(.+?)\]') { $inSection = ($Matches[1] -eq $section); continue }
+    if ($inSection -and $line -match ('^\s*' + [regex]::Escape($key) + '\s*=\s*(.*?)\s*$')) { return $Matches[1] }
+  }
+  return ''
+}
 
 try {
   Write-Host (T 'Title')
@@ -162,8 +177,12 @@ try {
   if ($launch) { Write-Host (T 'ModeLaunch') } else { Write-Host (T 'ModeFixOnly') }
   if (-not $headless) { Write-Host (T 'Hidden') }
   if ($state -eq 3) { Write-Host ''; Write-Host (T 'FixNow') }
+  # Spicetify's own default is 1; the helper then runs "spicetify update" (= upgrade) on a failed re-apply
+  $configDir = if ($env:SPICETIFY_CONFIG) { $env:SPICETIFY_CONFIG } else { Join-Path $env:APPDATA 'spicetify' }
+  if ((Get-IniValue (Join-Path $configDir 'config-xpui.ini') 'Setting' 'check_spicetify_update') -ne '0') { Write-Host ''; Write-Host (T 'UpdateNote') }
+  Write-Host ''
   Write-Host ((T 'LogAt') -f (Join-Path (Join-Path $env:LOCALAPPDATA 'NeonDrift') 'startup.log'))
-  Write-Host (T 'HowToRemove')
+  Write-Host ((T 'HowToRemove') -f $Target)
   Write-Host ''
   Write-Host (T 'Installed')
   exit 0

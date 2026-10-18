@@ -12,11 +12,18 @@
   If it finds one, it closes Spotify and runs "spicetify backup apply" on a clean (just updated)
   Spotify or "spicetify apply" on an already patched one (Spicetify refuses to back up patched
   files). If Spotify is still not patched, it runs "spicetify update" and tries once more. Then it
-  opens Spotify again and shows a notification.
+  opens Spotify again and shows a notification. Only one copy runs at a time.
 
-  It runs only on this computer and sends nothing. The only network access is Spicetify's own
-  updater on that retry ("spicetify update"), which is skipped when Spicetify's
-  check_spicetify_update setting is 0. It never touches Spotify's account, settings or volume.
+  It cannot tell an update from a deliberate "spicetify restore": remove the helper (uninstall.bat)
+  before you restore stock Spotify, or it applies Spicetify again at the next sign-in.
+
+  It runs only on this computer and the helper itself sends nothing. While Spicetify's
+  check_spicetify_update setting is 1, Spicetify may look on GitHub for a newer version of itself
+  when it runs, and the retry runs "spicetify update", which installs the newest Spicetify.
+  check_spicetify_update = 0 turns both off (recommended while NeonDrift needs Spicetify 2).
+  It never touches Spotify's account, settings or volume, and only closes this user's Spotify.
+
+  The Microsoft Store version of Spotify is not supported (Spicetify only partly supports it).
 
   Messages are in Portuguese when Windows' display language is Portuguese, in English otherwise.
   This file is UTF-8 with a BOM: Windows PowerShell 5.1 reads a file without one as ANSI.
@@ -28,8 +35,10 @@
 .PARAMETER NoLaunch
   Only fix, do not open Spotify. Spotify is opened again only if it was running before the fix.
 .PARAMETER DryRun
-  Only report whether Spicetify has to be re-applied; changes nothing and opens nothing.
-  Exit code 0: nothing to do, 3: a re-apply is needed, 1: no Spotify desktop app or no Spicetify.
+  Only report on the console whether Spicetify has to be re-applied; changes nothing, opens nothing
+  and writes no log.
+  Exit code 0: nothing to do, 3: a re-apply is needed, 1: no Spotify desktop app (or the Microsoft
+  Store one) or no Spicetify. Without -DryRun: 0 done / nothing to do, 1 the same, 2 failed or busy.
 .PARAMETER Force
   Re-apply even if everything looks patched.
 .PARAMETER Language
@@ -69,7 +78,11 @@ $Messages = @{
   en = @{
     SpotifyMissing       = 'Spotify (the desktop app from spotify.com) was not found; nothing to do.'
     SpotifyStore         = 'Only the Microsoft Store version of Spotify is installed, and Spicetify does not support it: install Spotify from spotify.com/download, then Spicetify. Nothing to do.'
+    SpotifyStorePath     = 'Spicetify is set up for the Microsoft Store version of Spotify ({0}), which Spicetify only partly supports and this helper does not: install Spotify from spotify.com/download and set Spicetify''s spotify_path to it. Nothing to do.'
     SpicetifyMissing     = 'Spicetify was not found; nothing to do.'
+    Waiting              = 'Another copy of the helper is running; waiting for it to finish.'
+    Busy                 = 'Another copy of the helper is still running; nothing done.'
+    RestoreHint          = 'Spotify''s version did not change. If you ran "spicetify restore" on purpose, remove this helper first (uninstall.bat), or it applies Spicetify again at every sign-in.'
     SpicetifyMissingOpen = 'Spicetify was not found; opening Spotify without it.'
     NoBackup             = 'none'
     ReasonVersion        = 'Spotify {0}, Spicetify backup {1}'
@@ -91,7 +104,11 @@ $Messages = @{
   pt = @{
     SpotifyMissing       = 'Spotify (o aplicativo para computador do spotify.com) não encontrado; nada a fazer.'
     SpotifyStore         = 'Só o Spotify da Microsoft Store está instalado, e o Spicetify não funciona com ele: instale o Spotify de spotify.com/download e depois o Spicetify. Nada a fazer.'
+    SpotifyStorePath     = 'O Spicetify está configurado para o Spotify da Microsoft Store ({0}), que o Spicetify só suporta em parte e este ajudante não suporta: instale o Spotify de spotify.com/download e aponte o spotify_path do Spicetify para ele. Nada a fazer.'
     SpicetifyMissing     = 'Spicetify não encontrado; nada a fazer.'
+    Waiting              = 'Outra cópia do ajudante está rodando; esperando ela terminar.'
+    Busy                 = 'Outra cópia do ajudante ainda está rodando; nada foi feito.'
+    RestoreHint          = 'A versão do Spotify não mudou. Se você rodou "spicetify restore" de propósito, tire este ajudante antes (uninstall.bat), senão ele aplica o Spicetify de novo em todo login.'
     SpicetifyMissingOpen = 'Spicetify não encontrado; abrindo o Spotify sem tema.'
     NoBackup             = 'nenhum'
     ReasonVersion        = 'Spotify {0}, backup do Spicetify {1}'
@@ -120,12 +137,14 @@ function T([string]$key) { return $Messages[$Lang][$key] }
 
 # ---- log -------------------------------------------------------------------------------------------
 if (-not $LogPath) { $LogPath = Join-Path (Join-Path $env:LOCALAPPDATA 'NeonDrift') 'startup.log' }
-New-Item -ItemType Directory -Force -Path (Split-Path -Parent $LogPath) | Out-Null
-if ((Test-Path -LiteralPath $LogPath) -and (Get-Item -LiteralPath $LogPath).Length -gt 512KB) { Remove-Item -LiteralPath $LogPath -Force }
+$writeLog = -not $DryRun   # a dry run only prints (it leaves no folder or log behind, e.g. for the installer)
+if ($writeLog) {
+  New-Item -ItemType Directory -Force -Path (Split-Path -Parent $LogPath) | Out-Null
+  if ((Test-Path -LiteralPath $LogPath) -and (Get-Item -LiteralPath $LogPath).Length -gt 512KB) { Remove-Item -LiteralPath $LogPath -Force }
+}
 function Log([string]$m) {
-  $line = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '  ' + $m
-  Add-Content -LiteralPath $LogPath -Value $line -Encoding UTF8
-  if (-not $AtLogin) { Write-Host $m }
+  if ($writeLog) { Add-Content -LiteralPath $LogPath -Value ((Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '  ' + $m) -Encoding UTF8 }
+  if ($DryRun -or -not $AtLogin) { Write-Host $m }
 }
 
 # ---- where things are ------------------------------------------------------------------------------
@@ -143,10 +162,15 @@ if (-not $ConfigPath) {
   $configDir = if ($env:SPICETIFY_CONFIG) { $env:SPICETIFY_CONFIG } else { Join-Path $env:APPDATA 'spicetify' }
   $ConfigPath = Join-Path $configDir 'config-xpui.ini'
 }
+# The Microsoft Store Spotify lives in a package folder under WindowsApps; when it is the only Spotify,
+# Spicetify writes that folder as spotify_path (and patches a copy in the package's LocalState instead,
+# so the checks below could never pass there).
+function Test-StorePath([string]$path) { return ($path -match '\\WindowsApps\\') -or ($path -match 'SpotifyAB\.SpotifyMusic') }
+
 if (-not $SpotifyExe) {
   $SpotifyExe = Join-Path $env:APPDATA 'Spotify\Spotify.exe'
   $configured = Get-IniValue $ConfigPath 'Setting' 'spotify_path'
-  if ($configured -and (Test-Path -LiteralPath (Join-Path $configured 'Spotify.exe'))) { $SpotifyExe = Join-Path $configured 'Spotify.exe' }
+  if ($configured -and ((Test-StorePath $configured) -or (Test-Path -LiteralPath (Join-Path $configured 'Spotify.exe')))) { $SpotifyExe = Join-Path $configured 'Spotify.exe' }
 }
 if (-not $SpicetifyExe) {
   $SpicetifyExe = Join-Path $env:LOCALAPPDATA 'spicetify\spicetify.exe'   # the official installer
@@ -227,13 +251,42 @@ function Show-Note([string]$text) {
   } catch { }
 }
 
-function Test-SpotifyRunning { return [bool](Get-Process -Name $spotifyProcess -ErrorAction SilentlyContinue) }
-function Stop-Spotify { Get-Process -Name $spotifyProcess -ErrorAction SilentlyContinue | Stop-Process -Force }
+# Only this user's Spotify (this Windows session) started from $SpotifyExe: not another signed-in
+# user's, not a Microsoft Store one. A process whose path cannot be read (e.g. run as administrator)
+# still counts, as before.
+$mySession = (Get-Process -Id $PID).SessionId
+function Get-SpotifyProcess {
+  $exe = [IO.Path]::GetFullPath($SpotifyExe)
+  Get-Process -Name $spotifyProcess -ErrorAction SilentlyContinue | Where-Object {
+    $_.SessionId -eq $mySession -and ((-not $_.Path) -or ([IO.Path]::GetFullPath($_.Path) -eq $exe))
+  }
+}
+function Test-SpotifyRunning { return (@(Get-SpotifyProcess).Count -gt 0) }
+function Stop-Spotify { Get-SpotifyProcess | Stop-Process -Force -ErrorAction SilentlyContinue }
 function Start-SpotifyIfClosed { if (-not (Test-SpotifyRunning)) { Start-Process -FilePath $SpotifyExe } }
 
 # ---- run -------------------------------------------------------------------------------------------
 if ($AtLogin) { Start-Sleep -Seconds 20 }   # let the desktop and the network settle
 
+# One copy at a time: the sign-in run and a double-click on the .bat must not close Spotify and patch
+# the same files together. The second copy waits, then checks again (a dry run changes nothing).
+$instanceLock = $null
+function Wait-Lock([int]$ms) {
+  try { return $instanceLock.WaitOne($ms) } catch [System.Threading.AbandonedMutexException] { return $true }
+}
+function Unlock { if ($instanceLock) { try { $instanceLock.ReleaseMutex() } catch { }; $instanceLock.Dispose(); $script:instanceLock = $null } }
+if (-not $DryRun) {
+  $instanceLock = New-Object System.Threading.Mutex($false, 'Local\NeonDriftAutoReapply')
+  if (-not (Wait-Lock 0)) {
+    Log (T 'Waiting')
+    if (-not (Wait-Lock 180000)) { Log (T 'Busy'); exit 2 }
+  }
+}
+
+if (Test-StorePath $SpotifyExe) {
+  Log ((T 'SpotifyStorePath') -f (Split-Path -Parent $SpotifyExe))
+  exit 1
+}
 if (-not (Test-Path -LiteralPath $SpotifyExe)) {
   if (Test-StoreSpotify) { Log (T 'SpotifyStore') } else { Log (T 'SpotifyMissing') }
   exit 1
@@ -245,7 +298,8 @@ if (-not (Test-Path -LiteralPath $SpicetifyExe)) {
 }
 
 $reasons = Get-PatchReasons
-if ($Force -and $reasons.Count -eq 0) { $reasons = @(T 'ReasonForce') }
+$forced = $Force -and $reasons.Count -eq 0
+if ($forced) { $reasons = @(T 'ReasonForce') }
 if ($DryRun) {
   if ($reasons.Count -eq 0) { Log ((T 'DryNothing') -f (Get-SpotifyVersion)); exit 0 }
   Log ((T 'DryWould') -f ($reasons -join '; '))
@@ -258,6 +312,9 @@ if ($reasons.Count -eq 0) {
 }
 
 Log ((T 'Reapplying') -f ($reasons -join '; '))
+# same version as the backup: not an update (a reinstall, or "spicetify restore" on purpose?)
+$bv = Get-BackupVersion
+if (-not $forced -and $bv -and $bv.StartsWith((Get-SpotifyVersion))) { Log (T 'RestoreHint') }
 $wasRunning = Test-SpotifyRunning
 $noRestart = $NoLaunch -and -not $wasRunning
 Stop-Spotify
@@ -282,6 +339,7 @@ if ($after.Count -gt 0) {
 
 Start-Sleep -Seconds 3
 if (-not $NoLaunch -or $wasRunning) { Start-SpotifyIfClosed }
+Unlock   # the notification below takes 9 s; another copy may go on meanwhile
 
 if ($after.Count -eq 0) {
   Log ((T 'Done') -f (Get-SpotifyVersion))

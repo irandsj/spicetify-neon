@@ -84,11 +84,16 @@ Copie os arquivos novos por cima dos antigos e rode `spicetify apply`. Pelo Mark
 
 Uma atualização do Spotify põe de volta os arquivos originais dele, e o NeonDrift some até você rodar
 `spicetify backup apply` de novo. O ajudante opcional em `extras/auto-reapply` faz isso em todo login do Windows (dois
-cliques em `install.bat`; o `uninstall.bat` tira). Veja
+cliques em `install.bat`; o `uninstall.bat`, lá ou em `%LOCALAPPDATA%\NeonDrift`, tira). Veja
 [o README](../README.pt-BR.md#manter-o-neondrift-depois-das-atualizações-do-spotify-windows) para o que ele faz, a opção
 de só consertar, o log e a privacidade.
 
 ## Desinstalar
+
+Se você instalou o [ajudante de atualizações do Windows](#manter-aplicado-depois-das-atualizações-do-spotify-windows),
+rode antes o `uninstall.bat` dele (em `%LOCALAPPDATA%\NeonDrift`) quando quiser o Spotify original de volta
+(`spicetify restore`) ou tirar o Spicetify: ele não distingue isso de uma atualização do Spotify, e aplicaria o
+Spicetify de novo no próximo login.
 
 ### Tirar a extensão
 

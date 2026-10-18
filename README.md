@@ -93,24 +93,33 @@ Spicetify is applied again. The optional helper in
 every Windows sign-in. It works with any Spicetify setup, not only NeonDrift.
 
 - **Install**: download this repository (*Code > Download ZIP*), unzip it, open `extras/auto-reapply` and
-  double-click `install.bat`. It checks that Spotify and Spicetify are there, copies the helper to
-  `%LOCALAPPDATA%\NeonDrift` and adds a **NeonDrift Spotify** shortcut to your Startup folder. No admin rights needed.
+  double-click `install.bat` (if Windows asks whether to run it, choose **Run**, or **More info > Run anyway**). It
+  checks that Spotify and Spicetify are there, copies the helper to `%LOCALAPPDATA%\NeonDrift` and adds a
+  **NeonDrift Spotify** shortcut to your Startup folder. No admin rights needed.
+- **Recommended for NeonDrift**: `spicetify config check_spicetify_update 0`. Otherwise, when a re-apply fails, the
+  helper runs `spicetify update` with nobody watching, and that can move you to Spicetify 3, which does not load
+  NeonDrift yet. The installer reminds you while it is on.
 - **Open Spotify at sign-in, or only fix?** The installer asks. Answer **n** and the helper only fixes: it opens
-  Spotify again only if it had to close it. From a terminal: `install.bat -NoLaunch`.
+  Spotify again only if it had to close it. From a terminal: in that folder, type `cmd` in File Explorer's address
+  bar and press Enter, then run `.\install.bat -NoLaunch` (the same works in PowerShell).
 - **What it does**: about 20 s after you sign in, it compares Spotify's version with the one Spicetify backed up and
   checks that Spotify's files still load Spicetify. If Spotify has updated, it closes Spotify, runs
   `spicetify backup apply` (or `spicetify apply`), tries once more after `spicetify update` if needed, opens Spotify
-  again and shows a notification. Otherwise it only opens Spotify (or does nothing).
+  again and shows a notification. Otherwise it only opens Spotify (or does nothing). Only one copy runs at a time, and
+  it only closes your own Spotify.
 - **Right away**: `Open Spotify (NeonDrift).bat` (in that folder and in `%LOCALAPPDATA%\NeonDrift`) runs the same check
   at once, for when Spotify updates while you are signed in.
-- **Privacy**: it runs only on your computer and sends nothing. The only network access is Spicetify's own updater
-  (`spicetify update`, on that retry). `spicetify config check_spicetify_update 0` turns it off, a good idea while
-  NeonDrift needs Spicetify 2 (`spicetify update` installs the newest Spicetify). It never touches your Spotify account,
-  settings or volume.
-- **Log**: `%LOCALAPPDATA%\NeonDrift\startup.log` (paste the path into Win+R). From a terminal,
-  `"Open Spotify (NeonDrift).bat" -DryRun` only reports whether Spicetify has to be applied again.
-- **Uninstall**: double-click `uninstall.bat` (it asks whether to delete the copied files and the log too), or delete
-  **NeonDrift Spotify** from the Startup folder (Win+R, `shell:startup`).
+- **Privacy**: it runs only on your computer, and the helper itself sends nothing. While `check_spicetify_update` is
+  1, Spicetify may look on GitHub for a newer version of itself when the helper runs it, and the retry runs
+  `spicetify update`; with 0, neither happens. It never touches your Spotify account, settings or volume.
+- **Log**: `%LOCALAPPDATA%\NeonDrift\startup.log` (paste the path into Win+R). To only check, without changing
+  anything, run this in a terminal (Command Prompt or PowerShell):
+  `cmd /c call "%LOCALAPPDATA%\NeonDrift\Open Spotify (NeonDrift).bat" -DryRun`.
+- **Uninstall**: double-click `uninstall.bat`, in that folder or in `%LOCALAPPDATA%\NeonDrift` (it asks whether to
+  delete the copied files and the log too). By hand: delete **NeonDrift Spotify** from the Startup folder (Win+R,
+  `shell:startup`) and the folder `%LOCALAPPDATA%\NeonDrift`.
+- **Going back to stock Spotify** (`spicetify restore`) or removing Spicetify? Uninstall the helper first: it cannot
+  tell a restore from a Spotify update, so it would apply Spicetify again at the next sign-in.
 - Needs Spotify from [spotify.com](https://www.spotify.com/download) (Spicetify does not support the Microsoft Store
   version; the installer tells you if that is the one you have) and Spicetify. Messages in English or Portuguese,
   following Windows' display language.

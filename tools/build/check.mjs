@@ -109,7 +109,12 @@ if (existsSync(join(root, HELPER))) {
     ok(!buf.some((b) => b > 0x7f), `${HELPER}/${f}: ASCII only (cmd.exe reads .bat files in the console code page)`);
     ok(!/(^|[^\r])\n/.test(s), `${HELPER}/${f}: CRLF line endings`);
     for (const m of s.matchAll(/%~dp0([^"%\r\n]+\.ps1)/g)) ok(files.includes(m[1]), `${HELPER}/${f}: calls ${m[1]}, which exists`);
+    ok(!s.includes("/dev/null"), `${HELPER}/${f}: redirects to nul, not /dev/null`);
   }
+  // every file the installer copies is one the uninstaller knows (it deletes only those)
+  const list = (f, v) => { const m = readFileSync(join(root, HELPER, f), "utf8").match(new RegExp("^\\$" + v + " = @\\((.*)\\)\\s*$", "m")); return m ? [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]) : []; };
+  const copied = list("install.ps1", "Files"), known = list("uninstall.ps1", "Known");
+  ok(copied.length > 0 && copied.every((f) => files.includes(f) && known.includes(f)), `${HELPER}: the ${copied.length} files install.ps1 copies exist and uninstall.ps1 removes them`);
   // PowerShell syntax, with the parser of Windows PowerShell 5.1 (Windows only)
   if (process.platform === "win32") {
     const list = ps1.map((f) => "'" + join(root, HELPER, f).replace(/'/g, "''") + "'").join(", ");

@@ -6,7 +6,8 @@
   Deletes the "NeonDrift Spotify" shortcut from the Startup folder, so the helper no longer runs at
   sign-in. With -RemoveFiles (or a "y" to the question that uninstall.bat asks) it also deletes the
   helper's own files and its log from %LOCALAPPDATA%\NeonDrift, and the folder if nothing else is in
-  it. Spotify, Spicetify, the theme and the extensions are not touched.
+  it. Spotify, Spicetify, the theme and the extensions are not touched. The installer also puts a copy
+  of uninstall.bat / uninstall.ps1 in %LOCALAPPDATA%\NeonDrift, which works the same way.
 
   This file is UTF-8 with a BOM: Windows PowerShell 5.1 reads a file without one as ANSI.
 
@@ -66,8 +67,9 @@ if ($Lang -eq 'auto') {
 function T([string]$key) { return $Messages[$Lang][$key] }
 
 $ShortcutName = 'NeonDrift Spotify.lnk'
-# only the files the helper itself puts there ("Abrir Spotify NeonDrift.bat": the name used before 1.0.1)
-$Known = @('neondrift-startup.ps1', 'Open Spotify (NeonDrift).bat', 'Abrir Spotify NeonDrift.bat', 'startup.log')
+# only the files the helper itself puts there: install.ps1's $Files, the log, and
+# "Abrir Spotify NeonDrift.bat" (the name used before 1.0.1)
+$Known = @('neondrift-startup.ps1', 'Open Spotify (NeonDrift).bat', 'uninstall.ps1', 'uninstall.bat', 'Abrir Spotify NeonDrift.bat', 'startup.log')
 
 try {
   if (-not $Target) { $Target = Join-Path $env:LOCALAPPDATA 'NeonDrift' }
@@ -89,8 +91,13 @@ try {
       $remove = [bool]($answer -and $answer.Trim() -match '^[yYsS]')
     }
     if ($remove) {
+      # this script may be the copy in $Target (it is already loaded, so it can delete itself);
+      # a folder cannot be deleted while it is a process's current folder
+      [Environment]::CurrentDirectory = [IO.Path]::GetTempPath()
       foreach ($f in $present) { Remove-Item -LiteralPath (Join-Path $Target $f) -Force }
-      if (-not (Get-ChildItem -LiteralPath $Target -Force | Select-Object -First 1)) { Remove-Item -LiteralPath $Target -Force }
+      if (-not (Get-ChildItem -LiteralPath $Target -Force | Select-Object -First 1)) {
+        try { Remove-Item -LiteralPath $Target -Force } catch { }   # e.g. a terminal still open in it: an empty folder stays
+      }
       Write-Host ((T 'FilesRemoved') -f $Target)
     } else {
       Write-Host ((T 'FilesKept') -f $Target)

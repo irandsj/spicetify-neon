@@ -9,15 +9,20 @@ A new optional Windows helper. The extension and the theme are unchanged (the ex
   one Spicetify backed up, `xpui.spa` is back, or `index.html` no longer loads Spicetify): `spicetify backup apply` on
   a clean Spotify, `spicetify apply` on a patched one, one more try after `spicetify update`; then it opens Spotify
   again and shows a notification. Works with any Spicetify setup.
-- `install.bat` copies it to `%LOCALAPPDATA%\NeonDrift` and adds a **NeonDrift Spotify** Startup shortcut that runs
-  with no window (`conhost --headless`; a hidden PowerShell window on Windows older than 10 2004). It asks whether to
-  open Spotify at sign-in or only fix (`install.bat -NoLaunch`). `uninstall.bat` removes the shortcut and, if you
-  want, the files and the log.
-- `Open Spotify (NeonDrift).bat` runs the same check at once; `-DryRun` only reports.
+- `install.bat` copies it (and `uninstall.bat`) to `%LOCALAPPDATA%\NeonDrift` and adds a **NeonDrift Spotify** Startup
+  shortcut that runs with no window (`conhost --headless`; a hidden PowerShell window on Windows older than 10 2004).
+  It asks whether to open Spotify at sign-in or only fix (`.\install.bat -NoLaunch`), and recommends
+  `spicetify config check_spicetify_update 0` while that is on. `uninstall.bat` removes the shortcut and, if you
+  want, the files and the log. If Spotify or Spicetify is missing, it installs nothing and leaves nothing behind.
+- `Open Spotify (NeonDrift).bat` runs the same check at once; `-DryRun` only reports (no log, no changes).
 - Says so when Spotify or Spicetify is missing, or when Spotify is the Microsoft Store version (which Spicetify does
-  not support). Skips `spicetify update` when Spicetify's `check_spicetify_update` is 0.
+  not support), including when Spicetify's `spotify_path` points at it. Skips `spicetify update` when Spicetify's
+  `check_spicetify_update` is 0.
+- One copy at a time (a double-click during the sign-in run waits for it). Closes only this user's Spotify, started
+  from the folder Spicetify patches.
 - Runs only on your computer; never touches the Spotify account, settings or volume. English and Português (BR),
-  following Windows' display language. Log: `%LOCALAPPDATA%\NeonDrift\startup.log`.
+  following Windows' display language. Log: `%LOCALAPPDATA%\NeonDrift\startup.log`. It cannot tell an update from
+  `spicetify restore`: uninstall it before going back to stock Spotify.
 
 ## 1.0.0
 

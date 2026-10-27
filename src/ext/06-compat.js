@@ -38,13 +38,13 @@
       locale: !!(s.Locale && (typeof s.Locale.getLocale === "function" || s.Locale._locale)),
     };
     const dom = {
-      actionButtons: q(".main-actionButtons, .uf2x5WzM1lLLCLSQdMFB"),   // readable name or the 1.3.4 scrambled one
+      actionButtons: q(".main-actionButtons, .uf2x5WzM1lLLCLSQdMFB, .ERwUgK0ZJ6qV1QmdLcWt"),   // readable name or the 1.3.4 / 1.3.6 scrambled one
       globalNav: q('[id="global-nav-bar"]'),
       userWidget: q('[data-testid="user-widget-link"]'),
       mainView: q("#main-view"),
       nowPlayingBar: q('aside[data-testid="now-playing-bar"]'),
       rightPanel: q("#Desktop_PanelContainer_Id"),
-      topContainer: q(".Root__top-container, .bokji1jrN2MBe7RA0384") || q(".Root > div:has(#main-view)"),
+      topContainer: q(".Root__top-container, .bokji1jrN2MBe7RA0384, .LiEjwLua6RNBCvlysAT2") || q(".Root > div:has(#main-view)"),
     };
     return Object.assign({ versions: versions(), theme: { on: THEME.on, version: THEME.ver, source: THEME.source }, lang: { lang: LANG, source: LANG_SRC }, api, dom,
       entry: entryState() });

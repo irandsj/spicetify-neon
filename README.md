@@ -57,6 +57,8 @@ gives the rest of Spotify the same neon glass look, in the colours you pick.
 - Spotify desktop with [Spicetify](https://spicetify.app) **2.x**.
 - Tested on **Windows 11, Spotify 1.3.4.258, Spicetify 2.45.3**. Other Spotify versions: best effort
   (see [docs/COMPATIBILITY.md](https://github.com/irandsj/spicetify-neon/blob/main/docs/COMPATIBILITY.md)). macOS and Linux should work but are untested.
+- **Spotify 1.3.6**: the extension works; the theme is only partly applied for now, because Spotify renamed its
+  internal class names (some glass and colours are missing; nothing breaks).
 - Spicetify 3 does not load Spicetify 2 themes or extensions yet: stay on Spicetify 2 for now
   ([how to install Spicetify 2](https://github.com/irandsj/spicetify-neon/blob/main/docs/INSTALL.md#getting-spicetify-2)).
 

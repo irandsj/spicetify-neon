@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.0.2 (2026-10-27)
+
+Checked with Spotify 1.3.6.1921 (Spicetify 2.45.3, Windows 11), offline only: against Spotify's code, not yet in a
+live Spotify. **Spotify 1.3.6 renamed all of its scrambled class names**, so on 1.3.6 the theme is only partly
+applied for now.
+
+**NeonDrift Ambient** (extension)
+- The top-bar button finds its usual place (just before "What's New") on Spotify 1.3.6 again. Before, it fell back
+  to the spot next to the profile button. `NeonDriftAmbient.compat()` knows the 1.3.6 names too.
+- Nothing else changed: ambient mode, the visualizers and the panel rely on Spicetify's APIs, not on Spotify's classes.
+
+**NeonDrift** (theme)
+- 16 classes that Spicetify's class map already names on Spotify 1.3.6 now work there: top bar background and
+  overlay, back / forward buttons, top-bar icons, generic buttons (and their active state and dot), the now-playing
+  bar, Home shortcuts, playlist content, subtitle, footer and inline-curation buttons, and the header's image
+  placeholder and metadata.
+- Known issue on Spotify 1.3.6: about 220 other classes the theme uses have no 1.3.6 name yet. Their rules do not
+  apply, so parts of the glass, some colours and polish details are missing (nothing breaks; see
+  docs/COMPATIBILITY.md). Spotify 1.3.4 looks the same as before.
+
+**Tools**
+- `tools/audit/selector-audit.mjs` now reads only Spotify's own files in `Apps/xpui`. Before, it also read the
+  theme's installed `user.css`, so every class looked present. It also lists this Spotify's name for a renamed class
+  when a class map knows it (`--map-new`).
+- The class-map check (`check.mjs --map-new`) counts a scrambled name next to a readable one only when this Spotify
+  has it, so a rename like 1.3.6's is caught.
+
 ## 1.0.1
 
 A new optional Windows helper. The extension and the theme are unchanged (the extension file still says 1.0.0).

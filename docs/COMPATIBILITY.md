@@ -5,6 +5,7 @@
 | Spotify | Spicetify | OS | Result |
 |---|---|---|---|
 | 1.3.4.258 | 2.45.3 | Windows 11 | extension + theme, extension alone (no theme), English and Português (BR) |
+| 1.3.6.1921 | 2.45.3 | Windows 11 | checked offline (against Spotify's code), NeonDrift 1.0.2: extension OK; theme partly applied, because Spotify renamed its scrambled classes (see below) |
 
 **With other themes.** The extension's panel and ambient mode were checked offline against Spotify 1.3.4's own CSS
 with the `user.css` of Dribbblish, Sleek, text, Onepunch, Ziro, BurntSienna, Flow, Default, Galaxy and Turntable
@@ -42,6 +43,11 @@ that has no readable name yet, the rule simply stops applying:
 
 With `replace_colors 1` most of these colours are covered by Spicetify's colour scheme anyway.
 
+**Spotify 1.3.6** renamed every scrambled class. Where Spicetify's main-branch class map already knows a class's 1.3.6
+name, that name is a third arm of the same `:is()` (16 classes in NeonDrift 1.0.2). About 220 other classes the theme
+uses have no 1.3.6 name yet, so on 1.3.6 the losses above apply to many pages until they are matched in a live
+Spotify. The extension is not affected.
+
 **Spicetify's class maps.** The readable names come from the class map Spicetify downloads at `spicetify backup`:
 the newest map of its main branch while the latest Spicetify release shares the installed version's major.minor
 number, else the map of the release tag, else the copy installed with Spicetify (also when GitHub cannot be reached).
@@ -64,7 +70,9 @@ specificity; `node tools/build/check.mjs` runs all release checks. For the class
 map (`https://raw.githubusercontent.com/spicetify/cli/main/css-map.json`) and run
 `node tools/build/check.mjs --map-new <that file>` (or `node tools/audit/selector-audit.mjs --original <Spicetify
 Backup/xpui.spa> --map-new <that file>`): it lists every class name that only one of the two maps (main and the local
-copy) gives this Spotify and that the theme or the extension uses without its scrambled twin.
+copy) gives this Spotify and that the theme or the extension uses without this Spotify's scrambled twin.
+`node tools/audit/selector-audit.mjs <Spotify Apps/xpui> theme/NeonDrift/user.css <local css-map.json> --map-new <main
+css-map.json>` lists the theme's scrambled classes this Spotify no longer has and, where a map knows it, the new name.
 
 ## Spicetify 3
 

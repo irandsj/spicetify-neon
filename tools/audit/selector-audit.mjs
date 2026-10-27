@@ -1,6 +1,6 @@
 // After a Spotify / Spicetify update: which scrambled class names of the theme still exist in Spotify's code, which
 // readable alias names exist, and which hashed classes have neither (their rules no longer apply).
-//   node tools/audit/selector-audit.mjs <Spotify xpui folder> [theme user.css] [css-map.json]
+//   node tools/audit/selector-audit.mjs <Spotify xpui folder> [theme user.css] [css-map.json] [--map-new <main css-map.json>]
 // The xpui folder is Spotify's Apps/xpui (after `spicetify apply`) or Spicetify's Extracted/Raw/xpui.
 //
 // Class-map check (exit code 1 on a problem):
@@ -78,7 +78,8 @@ function originalCheck(spa, cssPath, extPath, mapPath, mapNewPath) {
   const safe = new Set();
   for (const body of isArgs(css)) {
     const arms = splitTop(body);
-    const anchored = arms.some((x) => (/^\.[\w-]+$/.test(x) && isHash(x.slice(1))) || /^\[/.test(x) || /^\.Root\s*>/.test(x));
+    // a scrambled arm counts only when this Spotify has it (an older Spotify's name does not hold the readable one)
+    const anchored = arms.some((x) => (/^\.[\w-]+$/.test(x) && isHash(x.slice(1)) && classes.has(x.slice(1))) || /^\[/.test(x) || /^\.Root\s*>/.test(x));
     if (anchored) for (const x of arms) if (/^\.[\w-]+$/.test(x)) safe.add(x.slice(1));
   }
   const used = new Set([...css.matchAll(/\.([A-Za-z_][\w-]*)/g)].map((m) => m[1]));
@@ -86,7 +87,7 @@ function originalCheck(spa, cssPath, extPath, mapPath, mapNewPath) {
   for (const r of [...used].sort()) {
     if (!risky.has(r)) continue;
     nTheme++;
-    if (!safe.has(r)) problems.push("theme: ." + r + " exists only with some Spicetify class maps: write it as :is(.<scrambled name>, ." + r + ")");
+    if (!safe.has(r)) problems.push("theme: ." + r + " exists only with some Spicetify class maps: write it as :is(.<this Spotify's scrambled name>, ." + r + ")");
   }
   let nExt = 0;
   if (ok(extPath)) {
@@ -96,8 +97,8 @@ function originalCheck(spa, cssPath, extPath, mapPath, mapNewPath) {
       for (const cm of lit.matchAll(/\.([A-Za-z_][\w-]*)/g)) {
         if (!risky.has(cm[1])) continue;
         nExt++;
-        const hashed = [...lit.matchAll(/\.([A-Za-z0-9_]{16,20})(?![\w-])/g)].some((h) => isHash(h[1]));
-        if (!hashed) problems.push("extension: \"" + lit.slice(0, 70) + "\" uses ." + cm[1] + " without its scrambled name");
+        const hashed = [...lit.matchAll(/\.([A-Za-z0-9_]{16,20})(?![\w-])/g)].some((h) => isHash(h[1]) && classes.has(h[1]));
+        if (!hashed) problems.push("extension: \"" + lit.slice(0, 70) + "\" uses ." + cm[1] + " without this Spotify's scrambled name");
       }
     }
   }
@@ -110,13 +111,20 @@ function legacyAudit([xpui, cssPath = "theme/NeonDrift/user.css", mapPath]) {
   if (!xpui || !existsSync(xpui)) { console.error("usage: selector-audit.mjs <xpui folder> [user.css] [css-map.json]"); process.exitCode = 2; return; }
   const css = readFileSync(cssPath, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
   let bundle = "";
-  for (const f of readdirSync(xpui)) if (/\.(js|css)$/.test(f)) bundle += readFileSync(join(xpui, f), "utf8");
-  const map = mapPath && existsSync(mapPath) ? JSON.parse(readFileSync(mapPath, "utf8")) : null;
+  // Spotify's own files only: Spicetify adds the theme's user.css, colors.css and its custom apps to the same folder
+  for (const f of readdirSync(xpui)) if (/\.(js|css)$/.test(f) && !/^(user|colors)\.css$|^spicetify-/.test(f)) bundle += readFileSync(join(xpui, f), "utf8");
+  const load = (p) => (p && existsSync(p) ? JSON.parse(readFileSync(p, "utf8")) : null);
+  const map = load(mapPath), mapNew = load(mapNewArg);
   const tokens = new Set([...css.matchAll(/\.([A-Za-z_][\w-]*)/g)].map((m) => m[1]));
   const hashed = [...tokens].filter((t) => /^[A-Za-z0-9_]{20}$/.test(t) && /[A-Z]/.test(t) && /[a-z]/.test(t));
   const readable = [...tokens].filter((t) => /^(main|Root|view|playlist|artist|x|search|collection|queue|lyrics|desktopmodals)[-_]/.test(t));
   // pairs written as :is(.hash, .alias)
-  const pairs = new Map([...css.matchAll(/:is\(\.([A-Za-z0-9_]{20}), \.([\w-]+)\)/g)].map((m) => [m[1], m[2]]));
+  const pairs = new Map();
+  for (const body of isArgs(css)) {
+    const arms = splitTop(body).filter((x) => /^\.[\w-]+$/.test(x)).map((x) => x.slice(1));
+    const alias = arms.find((x) => !isHash(x));
+    if (alias) for (const h of arms) if (isHash(h)) pairs.set(h, alias);
+  }
   const present = (n) => bundle.includes(n);
   const rows = { hashKept: [], aliasOnly: [], bothGone: [], noAliasGone: [] };
   for (const h of hashed) {
@@ -132,6 +140,15 @@ function legacyAudit([xpui, cssPath = "theme/NeonDrift/user.css", mapPath]) {
   if (rows.bothGone.length) console.log("  " + rows.bothGone.join("\n  "));
   if (rows.noAliasGone.length) console.log("gone without an alias (their rules no longer apply):\n  " + rows.noAliasGone.join("\n  "));
   if (map) console.log(`css-map names for hashed classes of the theme (candidates for new :is() arms): ${mapAliases.length}` + (mapAliases.length ? "\n  " + mapAliases.join("\n  ") : ""));
+  // a class that Spotify scrambled again: the class maps may know this Spotify's name for the same readable one
+  const rescrambled = [];
+  for (const h of [...rows.bothGone, ...rows.noAliasGone].map((x) => x.split(" ")[0])) {
+    const names = new Set([pairs.get(h), map && map[h], mapNew && mapNew[h]].filter(Boolean));
+    const now = new Set();
+    for (const m of [map, mapNew]) if (m) for (const [k, v] of Object.entries(m)) if (names.has(v) && k !== h && present(k)) now.add(k);
+    if (now.size) rescrambled.push(h + " (" + [...names].join(", ") + ") -> add ." + [...now].join(", .") + " to its :is()");
+  }
+  if (rescrambled.length) console.log(`gone, but a class map knows this Spotify's name for them: ${rescrambled.length}\n  ` + rescrambled.join("\n  "));
   const deadReadable = readable.filter((r) => !present(r) && !/^(Root__right-sidebar|main-contextMenu|playlist-playlist|artist-artistOnTour|main-trackList|main-entityHeader|main-topBar|main-home|main-actionBarBackground|main-yourEpisodes|view-homeShortcutsGrid)/.test(r));
   if (deadReadable.length) console.log("readable names not found in Spotify's code (fine if they are aliases waiting for a css-map update):\n  " + deadReadable.join("\n  "));
 }

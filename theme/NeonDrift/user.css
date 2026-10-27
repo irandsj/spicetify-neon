@@ -1,7 +1,8 @@
 /* ==========================================================================
-   NeonDrift 1.0.0 - neon cyan / pink glass theme for Spotify (Spicetify)
+   NeonDrift 1.0.2 - neon cyan / pink glass theme for Spotify (Spicetify)
    MIT License (c) 2026 Iran. Tested on Spotify 1.3.4.258 + Spicetify 2.45.3
-   (works with replace_colors = 0 or 1).
+   (works with replace_colors = 0 or 1). Spotify 1.3.6: partly, see
+   docs/COMPATIBILITY.md.
 
    Pairs with the NeonDrift Ambient extension (extension/neondrift-ambient.js):
    its "Personalizar NeonDrift" panel changes this theme's two accent colours
@@ -29,6 +30,10 @@
      class, the selector is written :is(.scrambled, .readable-name): both arms
      are single classes, so the specificity stays the same, and the rule keeps
      working when a css-map update renames the class.
+   - Spotify 1.3.6 scrambled its classes again. Where Spicetify's css-map
+     knows the 1.3.6 name of a class, it is a third arm of the same :is()
+     (:is(.1.3.4-name, .1.3.6-name, .readable-name)); the other "1.3.4"
+     classes have no 1.3.6 name yet and need a check in a live Spotify.
    ========================================================================== */
 
 
@@ -503,7 +508,7 @@ html[data-cinema-library-postenter] #main-view {
 #Desktop_LeftSidebar_Id .YourLibraryX,
 :is(.Root__top-container, .Root > :where(div:has(#main-view))) > div:has(> aside[data-testid="now-playing-bar"]),  /* player grid cell (#000) */
 .L5dM7nzQpMJtRkvZZBZL,                              /* 1.3.4 same cell */
-:is(.cW4mdx7MbdsSDVOh4yFl, .main-nowPlayingBar-nowPlayingBar),
+:is(.cW4mdx7MbdsSDVOh4yFl, .iuUVHEu5S9rRkc0zz0Hq, .main-nowPlayingBar-nowPlayingBar),
 .tDwxpCRHu3TEG0d_5KfE :is(.CiOD8FcUYi5qaFpucMPa, .Root__right-sidebar-overlayWrapper),        /* 1.3.4 right panel inner wrappers */
 .tDwxpCRHu3TEG0d_5KfE :is(.j5s9RY8stckaOEL0yAbt, .Root__right-sidebar-peekContent) {
   background: transparent !important;
@@ -541,7 +546,7 @@ html[data-cinema-library-postenter] #main-view {
 :is(.Root__globalNav, [id="global-nav-bar"]) input[data-encore-id="formInput"]:focus {
   box-shadow: inset 0 0 0 2px var(--nd-a2-fg), 0 0 14px rgba(var(--nd-a2-rgb), 0.35) !important;
 }
-:is(.Root__globalNav, [id="global-nav-bar"]) :is(.oGrojYscaY3uU8Hy86FD, .main-globalNav-link-icon),
+:is(.Root__globalNav, [id="global-nav-bar"]) :is(.oGrojYscaY3uU8Hy86FD, .pBhNW0F1QP_gN4Gq60Lr, .main-globalNav-link-icon),
 :is(.Root__globalNav, [id="global-nav-bar"]) [data-testid="user-widget-link"] {
   box-shadow: inset 0 0 0 1px var(--nd-border-soft) !important;
 }
@@ -575,7 +580,7 @@ html[data-cinema-library-postenter] #main-view {
 }
 
 /* Page content wrappers painted with var(--background-base) */
-:is(.AJoN_5gn82ApfBFE8LbC, .playlist-playlist-playlistContent),                  /* 1.3.4 playlist / album / Liked Songs content */
+:is(.AJoN_5gn82ApfBFE8LbC, .t_mbBtGZ5QtvpsVNOtOj, .playlist-playlist-playlistContent),                  /* 1.3.4 playlist / album / Liked Songs content */
 .aqPz_GpMetVOMtCnHtYB,                  /* 1.3.4 playlist section */
 .rTHahewpyEmhd4usx52E,                  /* 1.3.4 artist page content */
 .JpSQVHjL43tApu3BBboT,                  /* 1.3.4 artist content (variant) */
@@ -586,7 +591,7 @@ html[data-cinema-library-postenter] #main-view {
 .CFQb76PJZilvJ8fZfIml,                  /* 1.3.4 concert page */
 .O_QpYvcQN_DNjJ3fOCHP,                  /* 1.3.4 prompted playlist track list */
 .u5lWmvdVqfwffV1OKIcZ,                  /* 1.3.4 episode page */
-:is(.w51TvrCVvEd85FHciVVi, .playlist-playlist-concertsFooter) {                 /* 1.3.4 concerts footer */
+:is(.w51TvrCVvEd85FHciVVi, .b6dS1_LZsqDM6qjX53dz, .playlist-playlist-concertsFooter) {                 /* 1.3.4 concerts footer */
   background: transparent !important;
   background-color: transparent !important;
 }
@@ -628,15 +633,15 @@ html[data-cinema-library-postenter] #main-view {
 /* page top bar (title + play button that appear on scroll). Spotify fades
    it in with an inline opacity (0 at the top of the page) and paints it with
    the cover colour; make it the same navy glass as the other sticky bars. */
-:is(.Ac2raqVCOQ_HYbbCkBAP, .main-topBar-background) {                 /* 1.3.4 top bar background */
+:is(.Ac2raqVCOQ_HYbbCkBAP, .B_NENXC7AHTEKsYhv3qv, .main-topBar-background) {                 /* 1.3.4 top bar background */
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
   backdrop-filter: blur(16px) saturate(1.2);
   background-color: var(--nd-glass-bar) !important;
   background-image: linear-gradient(90deg, rgba(var(--nd-a1-rgb), 0.10), rgba(var(--nd-a2-rgb), 0.06)) !important;
   box-shadow: inset 0 -1px 0 var(--nd-border-soft) !important;
 }
-:is(.Ac2raqVCOQ_HYbbCkBAP, .main-topBar-background) > :is(.oCEpJz9qQElJmB4tFybO, .main-topBar-overlay),    /* 1.3.4 #0009 overlay (static colours) */
-:is(.Ac2raqVCOQ_HYbbCkBAP, .main-topBar-background)::after {                    /* 1.3.4 "mixing" #121212 vignette */
+:is(.Ac2raqVCOQ_HYbbCkBAP, .B_NENXC7AHTEKsYhv3qv, .main-topBar-background) > :is(.oCEpJz9qQElJmB4tFybO, .EJTHIv1RyutH0yibEwgn, .main-topBar-overlay),    /* 1.3.4 #0009 overlay (static colours) */
+:is(.Ac2raqVCOQ_HYbbCkBAP, .B_NENXC7AHTEKsYhv3qv, .main-topBar-background)::after {                    /* 1.3.4 "mixing" #121212 vignette */
   background: none !important;
 }
 
@@ -790,21 +795,21 @@ aside[data-testid="now-playing-bar"] > .encore-bright-accent-set {
 
 /* lyrics / queue / devices / miniplayer / fullscreen: same ice-blue as the
    shuffle / repeat / volume icons (Spotify hard-codes grey #ffffffb3) */
-:is(.kqGrI_ODO1c0FGcH5yeB, .main-genericButton-button) {
+:is(.kqGrI_ODO1c0FGcH5yeB, .y8jg8B61IwA_Q9obcAZL, .main-genericButton-button) {
   color: var(--nd-subtext) !important;
 }
-:is(.kqGrI_ODO1c0FGcH5yeB, .main-genericButton-button):is(:hover, :focus-visible) {
+:is(.kqGrI_ODO1c0FGcH5yeB, .y8jg8B61IwA_Q9obcAZL, .main-genericButton-button):is(:hover, :focus-visible) {
   color: var(--nd-text) !important;
 }
 
 /* active queue / lyrics / connect / miniplayer buttons (was #1db954 + dot) */
-:is(.kqGrI_ODO1c0FGcH5yeB, .main-genericButton-button):is(.Cmx9uwGYgu1ZtlUHQhCH, .main-genericButton-buttonActive),
-:is(.kqGrI_ODO1c0FGcH5yeB, .main-genericButton-button):is(.Cmx9uwGYgu1ZtlUHQhCH, .main-genericButton-buttonActive):is(:hover, :focus, :active),
+:is(.kqGrI_ODO1c0FGcH5yeB, .y8jg8B61IwA_Q9obcAZL, .main-genericButton-button):is(.Cmx9uwGYgu1ZtlUHQhCH, .Tjk9xHexUrsjejB5PBbF, .main-genericButton-buttonActive),
+:is(.kqGrI_ODO1c0FGcH5yeB, .y8jg8B61IwA_Q9obcAZL, .main-genericButton-button):is(.Cmx9uwGYgu1ZtlUHQhCH, .Tjk9xHexUrsjejB5PBbF, .main-genericButton-buttonActive):is(:hover, :focus, :active),
 .UCEjvtn32knNrDy79Sqg button > svg {    /* 1.3.4 miniplayer open */
   color: var(--nd-a2-fg) !important;
   filter: drop-shadow(0 0 5px rgba(var(--nd-a2-rgb), 0.45));
 }
-:is(.kqGrI_ODO1c0FGcH5yeB, .main-genericButton-button):is(.c1Xr167nJtlrItp_mX8b, .main-genericButton-buttonActiveDot)::after {
+:is(.kqGrI_ODO1c0FGcH5yeB, .y8jg8B61IwA_Q9obcAZL, .main-genericButton-button):is(.c1Xr167nJtlrItp_mX8b, .OJsKOflU3SmUHnQ5_QKE, .main-genericButton-buttonActiveDot)::after {
   background-color: var(--nd-a2-fg) !important;
 }
 
@@ -881,7 +886,7 @@ input:checked ~ :is(.UD4xyfw1t2473YaX2GGP, .x-toggle-indicatorWrapper) > :is(.mQ
 
 /* 9d. Disabled back/forward in the top bar (same level as other disabled
        controls, see --encore-opacity-disabled) */
-:is(.mwS6iejUY71X0jWR5Ee1, .main-globalNav-historyButtons) button:disabled {
+:is(.mwS6iejUY71X0jWR5Ee1, .T4sL4PzPmiOVD9DCvE_X, .main-globalNav-historyButtons) button:disabled {
   opacity: 0.55 !important;
 }
 
@@ -1027,13 +1032,13 @@ img[src*="equaliser-green"] {
    -------------------------------------------------------------------------- */
 
 /* Home shortcut tiles (2-column grid) */
-:is(.Ut_wBpPPXvZ0dLV07qaf, .view-homeShortcutsGrid-shortcut) {                 /* 1.3.4 shortcut tile */
+:is(.Ut_wBpPPXvZ0dLV07qaf, .CcRlyOo0u4fhd31I7iZq, .view-homeShortcutsGrid-shortcut) {                 /* 1.3.4 shortcut tile */
   background-color: rgba(6, 20, 44, 0.62) !important;
   box-shadow: inset 0 0 0 1px var(--nd-border-soft) !important;
 }
-:is(.Ut_wBpPPXvZ0dLV07qaf, .view-homeShortcutsGrid-shortcut):hover,
-:is(.Ut_wBpPPXvZ0dLV07qaf, .view-homeShortcutsGrid-shortcut):focus-within,
-:is(.Ut_wBpPPXvZ0dLV07qaf, .view-homeShortcutsGrid-shortcut)[data-context-menu-open="true"] {
+:is(.Ut_wBpPPXvZ0dLV07qaf, .CcRlyOo0u4fhd31I7iZq, .view-homeShortcutsGrid-shortcut):hover,
+:is(.Ut_wBpPPXvZ0dLV07qaf, .CcRlyOo0u4fhd31I7iZq, .view-homeShortcutsGrid-shortcut):focus-within,
+:is(.Ut_wBpPPXvZ0dLV07qaf, .CcRlyOo0u4fhd31I7iZq, .view-homeShortcutsGrid-shortcut)[data-context-menu-open="true"] {
   background: rgba(14, 42, 80, 0.82) !important;
   box-shadow: inset 0 0 0 1px var(--nd-border), 0 0 16px rgba(var(--nd-a2-rgb), 0.16) !important;
 }
@@ -1199,7 +1204,7 @@ generic-modal .GenericModal,
 .rtKEKLjaGSIUoNrz6qpz,
 .bGm9lv8tRGxIjuakp7Fi,
 .jYGg1jRHWMANQFpBrFJm,                  /* edit details: cover button */
-:is(.qE5dJbZtaqoUEdXhiobY, .main-entityHeader-imagePlaceholder) {
+:is(.qE5dJbZtaqoUEdXhiobY, .JjlxmSQc7xLbtib82UpH, .main-entityHeader-imagePlaceholder) {
   background: #0e2140 !important;
   box-shadow: inset 0 0 0 1px var(--nd-border-soft) !important;
 }
@@ -1256,16 +1261,16 @@ generic-modal .GenericModal,
 .V98T2XXFopAg_1vVc11e, .VGRCBZ5Vm52rbwpsF6sC, .ViiK3vHH1srjEULlPmeV, .VmyPTbZ8B5LviWNMcRmF,
 .VyE74Mf5dDAesNJbgna3, .XlUK3hylsrTTBpiIDknC, .XloVjaWCVJMgS8L6tN_Y a, .a8kTghFGOrZaA6ZTg1ya,
 .aZgP3OqKrpaur_vdUJSt .oaw0ixVhPYH5pzes5WZH, .afW3N7afALyoE9C1hb7A, .b2qqwGENeW3gBp9kRsUm, .bCN24YFEQYPeCaEkfUOl,
-:is(.bbuQVZEnHzXmFz8pfIr9, .playlist-playlist-subtitle), .eZ2ZJGk4hi2311iwscj8, :is(.ey93Xas9BaG4lff6zbPo, .playlist-playlist-playlistInlineCurationBackButton), .f6vv4IzdjYsjAPIAxc3z,
+:is(.bbuQVZEnHzXmFz8pfIr9, .CrjXrXlUV7EHDL7zAVRR, .playlist-playlist-subtitle), .eZ2ZJGk4hi2311iwscj8, :is(.ey93Xas9BaG4lff6zbPo, .bDllR12H_xzMDelhnvHs, .playlist-playlist-playlistInlineCurationBackButton), .f6vv4IzdjYsjAPIAxc3z,
 .fvzNo2qvNZhc7H_XDz6v, .g9D4HnXX2Wf0tPUzNllL, .gwsilAFGh2vaS0TxwW7D, .hHdNkKlctvzt4HJyjMIg,
 .hPlHFpaAaW03k17NftFR, .ieqvwwh63oLhRmdGH4Fg, .iqOZNMeNrVPnnXG5n3Q9, .iuu4mM8fYOxEBCpgYlxW,
 .jt97b8w9KfpZ4jbps0mw, .kJveT1HanIIIhCUGkCUd a, .kk3DmG0UJzfE7fWwWL5u, .kqwWdqf0jjN0WjnfBsN8,
 .ktkZppIa1eATOPoLyMZl, .ljiX7AklYHZFioVkxoib, .mA2_Dbltfp_uxVJ3uUO2, .mXlJk4_T6MUs4nV6uXXQ,
 .mZ3yIpfK3xLM7ShTOy5J, .nNR6xUVXUOcqsc3HNVBA, .neCdjYwK0u4gglySK2hR, .nvpXV3tpVP3yMN0ezGWA,
-.oIS_AHeK7iyfUs3O2Qcj, .ojTYAIsRQtFIMsaigH6a, :is(.pEme6wNFg9h_aM8W4Z31, .playlist-playlist-playlistInlineCurationCloseButton), :is(.q6YWwSpiKqePGFJPlvJ9, .artist-artistOnTour-timeAndVenue),
+.oIS_AHeK7iyfUs3O2Qcj, .ojTYAIsRQtFIMsaigH6a, :is(.pEme6wNFg9h_aM8W4Z31, .f23RM0F_VCd4i1lIRV7I, .playlist-playlist-playlistInlineCurationCloseButton), :is(.q6YWwSpiKqePGFJPlvJ9, .artist-artistOnTour-timeAndVenue),
 :is(.q6YWwSpiKqePGFJPlvJ9, .artist-artistOnTour-timeAndVenue):is(.bua3Ua64gK0rbXtVLprZ, .artist-artistOnTour-condensed), .qfCY_zUGuXmkpXJOO6sZ, .sBPipAdCEtMfvkwmUebL, .tO1rgTiTZ61bzjWq6W81,
 .tP2JtlOTVZ_x4n3uIsgh, .vMVhR6dGPrzhWFs7wlU1, .vZFG_g9cDGIQRGO2TQ2U, .vz0aRJw1Dsts6KhXIU1q,
-.wXZ3BJned9MKzgJY7wbb, .xCkbEfj8ttMWrm0ObMfP, :is(.xxFbjJSCOVJajMiw3C2Q, .main-entityHeader-metaDataText), .ycRfVQShNkw9qIVP8icJ .dT5UjPHRBPYJoW9V407a a,
+.wXZ3BJned9MKzgJY7wbb, .xCkbEfj8ttMWrm0ObMfP, :is(.xxFbjJSCOVJajMiw3C2Q, .FY0xaFWiVpL71WodylD5, .main-entityHeader-metaDataText), .ycRfVQShNkw9qIVP8icJ .dT5UjPHRBPYJoW9V407a a,
 .ycRfVQShNkw9qIVP8icJ .m0ApRhKSKmMW1ukfdSAs, .ycRfVQShNkw9qIVP8icJ .q52CAgY4fWKVu1vpMlXD a, .ycRfVQShNkw9qIVP8icJ .sI1N5SecsIJmHONbgwNe, :is(.ykvEHwh6cnqQ5YljK_ik, .main-trackList-eventTicketIcon) {
   color: var(--nd-subtext);
 }

@@ -52,6 +52,8 @@ O tema **NeonDrift** dá ao resto do Spotify o mesmo visual de vidro neon, nas c
 - Spotify para computador com o [Spicetify](https://spicetify.app) **2.x**.
 - Testado no **Windows 11, Spotify 1.3.4.258, Spicetify 2.45.3**. Outras versões do Spotify: deve funcionar, sem
   garantia (veja [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)). macOS e Linux não foram testados.
+- **Spotify 1.3.6**: a extensão funciona; o tema por enquanto só se aplica em parte, porque o Spotify trocou os
+  nomes internos das classes (falta parte do vidro e algumas cores; nada quebra).
 - O Spicetify 3 ainda não carrega temas e extensões do Spicetify 2: continue no Spicetify 2 por enquanto
   ([como instalar o Spicetify 2](docs/INSTALL.pt-BR.md#como-ter-o-spicetify-2)).
 

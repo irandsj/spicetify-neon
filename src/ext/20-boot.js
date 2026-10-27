@@ -106,9 +106,9 @@
       right-side buttons: put ours just before "Novidades" (same group, so the same spacing), with that button's class.
       Hosts, in order: where Spicetify itself mounted it; .main-actionButtons; the global nav group of the profile
       button. A host that is not rendered counts as missing. Re-checked by the idle timer (cheap). */
-  // the readable names exist only when Spicetify's class map was fresh at "spicetify backup"; else the 1.3.4 hashes
-  const ACTION_BUTTONS = ".main-actionButtons, .uf2x5WzM1lLLCLSQdMFB";
-  const ACTION_BUTTON = ".main-actionButtons-button, .IP9nbmlAqlYRK9fq8Mll";
+  // the readable names exist only when Spicetify's class map was fresh at "spicetify backup"; else the 1.3.4 / 1.3.6 hashes
+  const ACTION_BUTTONS = ".main-actionButtons, .uf2x5WzM1lLLCLSQdMFB, .ERwUgK0ZJ6qV1QmdLcWt";
+  const ACTION_BUTTON = ".main-actionButtons-button, .IP9nbmlAqlYRK9fq8Mll, .LybVpBCvA8pEFVale0jg";
   const topShown = () => !!(topBtn && topBtn.element.isConnected && topBtn.element.getClientRects().length);
   function mountTopbar() {
     if (!topBtn) return;

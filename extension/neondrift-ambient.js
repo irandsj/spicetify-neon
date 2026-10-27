@@ -1,4 +1,4 @@
-/*! NeonDrift Ambient v1.0.0 | MIT License | (c) 2026 Iran
+/*! NeonDrift Ambient v1.0.2 | MIT License | (c) 2026 Iran
  *  Ambient mode, neon visualizer and settings panel for Spotify (Spicetify extension).
  *  Works with any Spicetify theme; pairs with the NeonDrift theme. 
  *  Built file: edit src/ and run `node tools/build/build.mjs`. */
@@ -10,7 +10,7 @@
   // older theme.js-based NeonDrift): a release build steps aside for a running extension of the same or a newer
   // version; otherwise the running copy hands over (its _destroy) and this one takes its place. A dev build always
   // takes over (hot swap while developing).
-  const ND_VERSION = "1.0.0";
+  const ND_VERSION = "1.0.2";
   const ND_DEV = false;
   const FAULT = {};                 // dev build fault drills (_fault): an API that looks missing
   const verNum = (v) => String(v || "0").split(/[.+-]/).slice(0, 3).reduce((a, x) => a * 1000 + (parseInt(x, 10) || 0), 0);
@@ -527,13 +527,13 @@
       locale: !!(s.Locale && (typeof s.Locale.getLocale === "function" || s.Locale._locale)),
     };
     const dom = {
-      actionButtons: q(".main-actionButtons, .uf2x5WzM1lLLCLSQdMFB"),   // readable name or the 1.3.4 scrambled one
+      actionButtons: q(".main-actionButtons, .uf2x5WzM1lLLCLSQdMFB, .ERwUgK0ZJ6qV1QmdLcWt"),   // readable name or the 1.3.4 / 1.3.6 scrambled one
       globalNav: q('[id="global-nav-bar"]'),
       userWidget: q('[data-testid="user-widget-link"]'),
       mainView: q("#main-view"),
       nowPlayingBar: q('aside[data-testid="now-playing-bar"]'),
       rightPanel: q("#Desktop_PanelContainer_Id"),
-      topContainer: q(".Root__top-container, .bokji1jrN2MBe7RA0384") || q(".Root > div:has(#main-view)"),
+      topContainer: q(".Root__top-container, .bokji1jrN2MBe7RA0384, .LiEjwLua6RNBCvlysAT2") || q(".Root > div:has(#main-view)"),
     };
     return Object.assign({ versions: versions(), theme: { on: THEME.on, version: THEME.ver, source: THEME.source }, lang: { lang: LANG, source: LANG_SRC }, api, dom,
       entry: entryState() });
@@ -1420,9 +1420,9 @@
       right-side buttons: put ours just before "Novidades" (same group, so the same spacing), with that button's class.
       Hosts, in order: where Spicetify itself mounted it; .main-actionButtons; the global nav group of the profile
       button. A host that is not rendered counts as missing. Re-checked by the idle timer (cheap). */
-  // the readable names exist only when Spicetify's class map was fresh at "spicetify backup"; else the 1.3.4 hashes
-  const ACTION_BUTTONS = ".main-actionButtons, .uf2x5WzM1lLLCLSQdMFB";
-  const ACTION_BUTTON = ".main-actionButtons-button, .IP9nbmlAqlYRK9fq8Mll";
+  // the readable names exist only when Spicetify's class map was fresh at "spicetify backup"; else the 1.3.4 / 1.3.6 hashes
+  const ACTION_BUTTONS = ".main-actionButtons, .uf2x5WzM1lLLCLSQdMFB, .ERwUgK0ZJ6qV1QmdLcWt";
+  const ACTION_BUTTON = ".main-actionButtons-button, .IP9nbmlAqlYRK9fq8Mll, .LybVpBCvA8pEFVale0jg";
   const topShown = () => !!(topBtn && topBtn.element.isConnected && topBtn.element.getClientRects().length);
   function mountTopbar() {
     if (!topBtn) return;

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.2, checked on Spotify 1.3.8 (2026-11-07)
+
+Tested with Spotify 1.3.8.620 (Spicetify 2.45.3, Windows 11), offline only: against Spotify's code, not yet in a
+live Spotify. No file changed; the version stays 1.0.2.
+
+- Spotify 1.3.8 renamed only about 6% of its scrambled class names (5460 of 5836 are the same as on 1.3.6), and none
+  that NeonDrift uses: the theme's 16 classes that work on 1.3.6, the extension's 3 (top-bar button and its place
+  before "What's New") and Spotify's mount points are all still there. The extension and the theme behave as on 1.3.6.
+- The known issue of 1.0.2 is unchanged: about 220 classes the theme uses still have no name on Spotify 1.3.6 / 1.3.8,
+  so parts of the glass and some colours are missing there.
+
 ## 1.0.2 (2026-10-27)
 
 Checked with Spotify 1.3.6.1921 (Spicetify 2.45.3, Windows 11), offline only: against Spotify's code, not yet in a

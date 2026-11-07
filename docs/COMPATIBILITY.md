@@ -6,6 +6,7 @@
 |---|---|---|---|
 | 1.3.4.258 | 2.45.3 | Windows 11 | extension + theme, extension alone (no theme), English and Português (BR) |
 | 1.3.6.1921 | 2.45.3 | Windows 11 | checked offline (against Spotify's code), NeonDrift 1.0.2: extension OK; theme partly applied, because Spotify renamed its scrambled classes (see below) |
+| 1.3.8.620 | 2.45.3 | Windows 11 | checked offline (against Spotify's code), NeonDrift 1.0.2: same as 1.3.6. Every class NeonDrift matches on 1.3.6 is still there (theme 16, extension 3, top-bar mount points included); 1.3.8 renamed only about 6% of Spotify's scrambled classes, none that NeonDrift uses |
 
 **With other themes.** The extension's panel and ambient mode were checked offline against Spotify 1.3.4's own CSS
 with the `user.css` of Dribbblish, Sleek, text, Onepunch, Ziro, BurntSienna, Flow, Default, Galaxy and Turntable
